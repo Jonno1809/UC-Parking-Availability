@@ -8,6 +8,7 @@ import org.xmlpull.v1.XmlPullParserException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 /**
@@ -24,16 +25,16 @@ public class ParkingXMLParser {
             parser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, false);
             parser.setInput(inputStream, null);
             parser.nextTag();
-            return readFeed(parser);
+            return readCarParks(parser);
         } finally {
             inputStream.close();
         }
     }
 
-    private List readFeed(XmlPullParser parser) throws XmlPullParserException, IOException {
+    private List readCarParks(XmlPullParser parser) throws XmlPullParserException, IOException {
         List car_parks = new ArrayList();
 
-        parser.require(XmlPullParser.START_TAG, namespace, "feed");
+        parser.require(XmlPullParser.START_TAG, namespace, "car_parks");
         while (parser.next() != XmlPullParser.END_TAG) {
             if (parser.getEventType() != XmlPullParser.START_TAG) {
                 continue;
@@ -51,6 +52,36 @@ public class ParkingXMLParser {
         return car_parks;
     }
 
-    private Object readCarPark(XmlPullParser parser) {
+    public class CarPark {
+        private final String name;
+        private final int capacity;
+        private final int free;
+        private final HashSet shape_coords;
+        private final String type;
+
+        public CarPark(String name, int capacity, int free, HashSet shape_coords, String type) {
+            this.name = name;
+            this.capacity = capacity;
+            this.free = free;
+            this.shape_coords = shape_coords;
+            this.type = type;
+        }
+
+        private CarPark readCarPark(XmlPullParser parser) throws XmlPullParserException, IOException {
+            parser.require(XmlPullParser.START_TAG, namespace, "car_park");
+            String name = null;
+            int capacity = 0;
+            int free = 0;
+            HashSet shape_coords = null;
+            String type = null;
+
+            while (parser.next() != XmlPullParser.END_TAG) {
+                if (parser.getEventType() != XmlPullParser.START_TAG) {
+                    continue;
+                }
+            }
+        }
+
     }
+
 }
