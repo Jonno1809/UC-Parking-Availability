@@ -56,13 +56,15 @@ public class ParkingXMLParser {
         private final String name;
         private final int capacity;
         private final int free;
+        private final int occupied;
         private final HashSet shape_coords;
         private final String type;
 
-        public CarPark(String name, int capacity, int free, HashSet shape_coords, String type) {
+        public CarPark(String name, int capacity, int free, int occupied, HashSet shape_coords, String type) {
             this.name = name;
             this.capacity = capacity;
             this.free = free;
+            this.occupied = occupied;
             this.shape_coords = shape_coords;
             this.type = type;
         }
@@ -72,6 +74,7 @@ public class ParkingXMLParser {
             String name = null;
             int capacity = 0;
             int free = 0;
+            int occupied = 0;
             HashSet shape_coords = null;
             String type = null;
 
@@ -79,7 +82,19 @@ public class ParkingXMLParser {
                 if (parser.getEventType() != XmlPullParser.START_TAG) {
                     continue;
                 }
+
+                String parserName = parser.getName();
+                switch (parserName){
+                    case "capacity": readCapacity(parser); break;
+                    case "free": readFree(parser); break;
+                    case "name": readName(parser); break;
+                    case "occupancy": readOccupancy(parser); break;
+                    case "shape_coords": readShapeCoords(parser); break;
+                    case "type": readType(parser); break;
+                    default: skip(parser);
+                }
             }
+            return new CarPark(name, capacity, free, occupied, shape_coords, type);
         }
 
     }
