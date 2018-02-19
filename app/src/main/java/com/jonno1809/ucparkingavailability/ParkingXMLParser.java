@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 
 /**
@@ -69,7 +70,7 @@ public class ParkingXMLParser {
             this.type = type;
         }
 
-        private CarPark readCarPark(XmlPullParser parser) throws XmlPullParserException, IOException {
+        private CarPark readCarPark (XmlPullParser parser) throws XmlPullParserException, IOException {
             parser.require(XmlPullParser.START_TAG, namespace, "car_park");
             String name = null;
             int capacity = 0;
@@ -85,11 +86,11 @@ public class ParkingXMLParser {
 
                 String parserName = parser.getName();
                 switch (parserName){
-                    case "capacity": readCapacity(parser); break;
-                    case "free": readFree(parser); break;
-                    case "name": readName(parser); break;
-                    case "occupancy": readOccupancy(parser); break;
-                    case "shape_coords": readShapeCoords(parser); break;
+                    case "capacity": capacity = readCapacity(parser); break;
+                    case "free": free = readFree(parser); break;
+                    case "name": name = readName(parser); break;
+                    case "occupancy": occupied = readOccupancy(parser); break;
+                    case "shape_coords": shape_coords = readShapeCoords(parser); break;
                     case "type": readType(parser); break;
                     default: skip(parser);
                 }
@@ -97,6 +98,79 @@ public class ParkingXMLParser {
             return new CarPark(name, capacity, free, occupied, shape_coords, type);
         }
 
+        private String readName (XmlPullParser parser) throws IOException, XmlPullParserException {
+            parser.require(XmlPullParser.START_TAG, namespace, "name");
+            String name = readText(parser);
+            parser.require(XmlPullParser.END_TAG, namespace, "name");
+            return name;
+        }
+
+        private int readCapacity (XmlPullParser parser) throws IOException, XmlPullParserException {
+            parser.require(XmlPullParser.START_TAG, namespace, "capacity");
+            int capacity = Integer.parseInt(readText(parser));
+            parser.require(XmlPullParser.END_TAG, namespace, "capacity");
+            return capacity;
+        }
+
+        private int readFree (XmlPullParser parser) throws IOException, XmlPullParserException {
+            parser.require(XmlPullParser.START_TAG, namespace, "free");
+            int free = Integer.parseInt(readText(parser));
+            parser.require(XmlPullParser.END_TAG, namespace, "free");
+            return free;
+        }
+
+        private int readOccupancy (XmlPullParser parser) throws IOException, XmlPullParserException {
+            parser.require(XmlPullParser.START_TAG, namespace, "occupancy");
+            int occupied = Integer.parseInt(readText(parser));
+            parser.require(XmlPullParser.END_TAG, namespace, "occupancy");
+            return occupied;
+        }
+
+        private HashSet readShapeCoords(XmlPullParser parser) throws IOException, XmlPullParserException {
+            parser.require(XmlPullParser.START_TAG, namespace, "shape_coords");
+            String temp = readText(parser);
+            parser.require(XmlPullParser.END_TAG, namespace, "shape_coords");
+
+            HashSet<String> coords = new LinkedHashSet<String>(25);
+
+            for (String coord:temp.split("\\S{31},")) {
+                coords.add(coord.substring(1,coord.length()-1));
+            }
+            return coords;
+        }
+
+        private String readType(XmlPullParser parser) throws IOException, XmlPullParserException {
+            parser.require(XmlPullParser.START_TAG, namespace, "type");
+            String type = readText(parser);
+            parser.require(XmlPullParser.END_TAG, namespace, "type");
+            return type;
+        }
+
+        private String readText (XmlPullParser parser) throws XmlPullParserException, IOException {
+            String result = "";
+            if (parser.next() == XmlPullParser.TEXT || XmlPullParser.) {
+                result = parser.getText();
+                parser.nextTag();
+            }
+            return result;
+        }
+
+        private void skip(XmlPullParser parser) throws XmlPullParserException, IOException {
+            if (parser.getEventType() != XmlPullParser.START_TAG) {
+                throw new IllegalStateException();
+            }
+            int depth = 1;
+            while (depth != 0) {
+                switch (parser.next()) {
+                    case XmlPullParser.END_TAG:
+                        depth--;
+                        break;
+                    case XmlPullParser.START_TAG:
+                        depth++;
+                        break;
+                }
+            }
+        }
     }
 
 }
