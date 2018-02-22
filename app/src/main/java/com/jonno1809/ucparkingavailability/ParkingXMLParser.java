@@ -14,6 +14,7 @@ import java.util.List;
 
 /**
  * Created by Jonno on 18/02/2018.
+ * (With a little help from https://developer.android.com/training/basics/network-ops/xml.html)
  */
 
 public class ParkingXMLParser {
@@ -52,7 +53,7 @@ public class ParkingXMLParser {
 
         return car_parks;
     }
-    
+
     private CarPark readCarPark (XmlPullParser parser) throws XmlPullParserException, IOException {
         parser.require(XmlPullParser.START_TAG, namespace, "car_park");
         String name = null;
@@ -116,6 +117,7 @@ public class ParkingXMLParser {
 
         HashSet<String> coords = new LinkedHashSet<String>(25);
 
+        // Split coordinates and remove curly brackets
         for (String coord:temp.split("\\S{31},")) {
             coords.add(coord.substring(1,coord.length()-1));
         }
@@ -152,24 +154,6 @@ public class ParkingXMLParser {
                     depth++;
                     break;
             }
-        }
-    }
-
-    public class CarPark {
-        private final String name;
-        private final int capacity;
-        private final int free;
-        private final int occupied;
-        private final HashSet shape_coords;
-        private final String type;
-
-        public CarPark(String name, int capacity, int free, int occupied, HashSet shape_coords, String type) {
-            this.name = name;
-            this.capacity = capacity;
-            this.free = free;
-            this.occupied = occupied;
-            this.shape_coords = shape_coords;
-            this.type = type;
         }
     }
 }

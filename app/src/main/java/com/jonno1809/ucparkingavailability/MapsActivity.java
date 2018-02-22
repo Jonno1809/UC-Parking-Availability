@@ -1,5 +1,6 @@
 package com.jonno1809.ucparkingavailability;
 
+import android.os.AsyncTask;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 
@@ -10,9 +11,20 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import org.xmlpull.v1.XmlPullParser;
+import org.xmlpull.v1.XmlPullParserException;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.util.List;
+
+import javax.net.ssl.HttpsURLConnection;
+
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
     private GoogleMap mMap;
+    private final String UC_URL = "https://www.canberra.edu.au/wsprd/UCMobile/parking.svc/availability";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -22,6 +34,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+        try {
+            downloadUrl(UC_URL);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
 
@@ -44,5 +61,36 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
     }
 
+    private class DownloadXmlTask extends AsyncTask<String, Void, String> {
 
+        @Override
+        protected String doInBackground(String... urls) {
+            try {
+                return loadXmlFromNetwork(urls[0]);
+            } catch (XmlPullParserException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return null;
+        }
+    }
+
+    private String loadXmlFromNetwork (String urlString) throws XmlPullParserException, IOException {
+        InputStream stream = null;
+        ParkingXMLParser parkingXMLParser = new ParkingXMLParser();
+        List<CarPark> carParks = null;
+
+    }
+
+    private InputStream downloadUrl(String urlString) throws IOException {
+        URL url = new URL(urlString);
+        HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
+        connection.setReadTimeout(10000);
+        connection.setConnectTimeout(15000);
+        connection.setRequestMethod("GET");
+        connection.setDoInput(false);
+        connection.connect();
+        return connection.getInputStream();
+    }
 }
