@@ -7,6 +7,30 @@ import java.util.HashSet;
  */
 
 public class CarPark {
+    public String getName() {
+        return name;
+    }
+
+    public int getCapacity() {
+        return capacity;
+    }
+
+    public int getFree() {
+        return free;
+    }
+
+    public int getOccupied() {
+        return occupied;
+    }
+
+    public HashSet getShape_coords() {
+        return shape_coords;
+    }
+
+    public String getType() {
+        return type;
+    }
+
     private final String name;
     private final int capacity;
     private final int free;
