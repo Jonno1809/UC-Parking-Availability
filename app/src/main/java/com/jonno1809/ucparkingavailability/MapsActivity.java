@@ -81,6 +81,18 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         ParkingXMLParser parkingXMLParser = new ParkingXMLParser();
         List<CarPark> carParks = null;
 
+        try {
+            stream = downloadUrl(urlString);
+            carParks = parkingXMLParser.parse(stream);
+        } finally {
+            if (stream != null) {
+                stream.close();
+            }
+        }
+
+        for (CarPark carPark : carParks) {
+
+        }
     }
 
     private InputStream downloadUrl(String urlString) throws IOException {
