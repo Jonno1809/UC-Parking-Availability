@@ -11,6 +11,8 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Polygon;
+import com.google.android.gms.maps.model.PolygonOptions;
 
 import org.xmlpull.v1.XmlPullParserException;
 
@@ -59,10 +61,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMap.addMarker(new MarkerOptions().position(ucLatLng).title("University of Canberra"));
         DownloadXmlTask downloadXmlTask = new DownloadXmlTask();
         downloadXmlTask.execute(UC_URL);
-        LatLngBounds ucLatLngBounds = new LatLngBounds(
-                new LatLng(-35.245961, 149.092092),
-                new LatLng(-35.227620, 149.069151)
-        );
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(ucLatLng,15));
     }
 
@@ -86,6 +84,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 CarPark carPark = carParkIterator.next();
                 HashSet coords = carPark.getShape_coords();
                 Iterator coordsIterator = coords.iterator();
+                PolygonOptions carParkEdges = new PolygonOptions();
 
                 // This could need improvement
                 while (coordsIterator.hasNext()) {
@@ -96,11 +95,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         double lat = Double.parseDouble(sLat);
                         double lng = Double.parseDouble(sLng);
                         LatLng shapeVertex = new LatLng(lat, lng);
-                        mMap.addMarker(new MarkerOptions().position(shapeVertex));
+                        carParkEdges.add(shapeVertex);
+
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
                 }
+                Polygon carParkShape = mMap.addPolygon(carParkEdges);
             }
 
         }
