@@ -9,17 +9,20 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.HashSet;
+import java.util.Iterator;
+
 import java.util.List;
 
-import javax.net.ssl.HttpsURLConnection;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
@@ -34,11 +37,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
-        try {
-            downloadUrl(UC_URL);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+
     }
 
 
@@ -56,27 +55,58 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMap = googleMap;
 
         // Add a marker in Sydney and move the camera
-        LatLng sydney = new LatLng(-34, 151);
-        mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+        LatLng ucLatLng = new LatLng(-35.237894, 149.084055);
+        mMap.addMarker(new MarkerOptions().position(ucLatLng).title("University of Canberra"));
+        DownloadXmlTask downloadXmlTask = new DownloadXmlTask();
+        downloadXmlTask.execute(UC_URL);
+        LatLngBounds ucLatLngBounds = new LatLngBounds(
+                new LatLng(-35.245961, 149.092092),
+                new LatLng(-35.227620, 149.069151)
+        );
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(ucLatLng,15));
     }
 
-    private class DownloadXmlTask extends AsyncTask<String, Void, String> {
+    private class DownloadXmlTask extends AsyncTask<String, Void, List<CarPark>> {
 
         @Override
-        protected String doInBackground(String... urls) {
+        protected List<CarPark> doInBackground(String... urls) {
             try {
-                return loadXmlFromNetwork(urls[0]);
-            } catch (XmlPullParserException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
+                return getCarParkXmlFromNetwork(urls[0]);
+            } catch (XmlPullParserException | IOException e) {
                 e.printStackTrace();
             }
             return null;
         }
+
+        @Override
+        protected void onPostExecute(List<CarPark> result) {
+            Iterator<CarPark> carParkIterator = result.iterator();
+
+            while (carParkIterator.hasNext()) {
+                CarPark carPark = carParkIterator.next();
+                HashSet coords = carPark.getShape_coords();
+                Iterator coordsIterator = coords.iterator();
+
+                // This could need improvement
+                while (coordsIterator.hasNext()) {
+                    try {
+                        Object coord = coordsIterator.next();
+                        String sLat = coord.toString().split(",")[0];
+                        String sLng = coord.toString().split(",")[1];
+                        double lat = Double.parseDouble(sLat);
+                        double lng = Double.parseDouble(sLng);
+                        LatLng shapeVertex = new LatLng(lat, lng);
+                        mMap.addMarker(new MarkerOptions().position(shapeVertex));
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+
+        }
     }
 
-    private String loadXmlFromNetwork (String urlString) throws XmlPullParserException, IOException {
+    private List<CarPark> getCarParkXmlFromNetwork(String urlString) throws XmlPullParserException, IOException {
         InputStream stream = null;
         ParkingXMLParser parkingXMLParser = new ParkingXMLParser();
         List<CarPark> carParks = null;
@@ -84,24 +114,23 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         try {
             stream = downloadUrl(urlString);
             carParks = parkingXMLParser.parse(stream);
+        } catch (Exception e){
+            e.printStackTrace();
         } finally {
             if (stream != null) {
                 stream.close();
             }
         }
-
-        for (CarPark carPark : carParks) {
-
-        }
+        return carParks;
     }
 
     private InputStream downloadUrl(String urlString) throws IOException {
         URL url = new URL(urlString);
-        HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setReadTimeout(10000);
         connection.setConnectTimeout(15000);
         connection.setRequestMethod("GET");
-        connection.setDoInput(false);
+        connection.setDoInput(true);
         connection.connect();
         return connection.getInputStream();
     }

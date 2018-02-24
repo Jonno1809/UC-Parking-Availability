@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  * Created by Jonno on 18/02/2018.
@@ -36,15 +37,18 @@ public class ParkingXMLParser {
     private List readCarParks(XmlPullParser parser) throws XmlPullParserException, IOException {
         List car_parks = new ArrayList();
 
-        parser.require(XmlPullParser.START_TAG, namespace, "car_parks");
+        parser.require(XmlPullParser.START_TAG, namespace, "parking_availability");
         while (parser.next() != XmlPullParser.END_TAG) {
             if (parser.getEventType() != XmlPullParser.START_TAG) {
                 continue;
             }
             String name = parser.getName();
 
-            if (name.equals("car_park")) {
-                car_parks.add(readCarPark(parser));
+            if (name.equals("car_parks")) {
+                parser.require(XmlPullParser.START_TAG, namespace, "car_parks");
+                while (parser.next() != XmlPullParser.END_TAG) {
+                    car_parks.add(readCarPark(parser));
+                }
             }
             else {
                 skip(parser);
@@ -53,6 +57,7 @@ public class ParkingXMLParser {
 
         return car_parks;
     }
+
 
     private CarPark readCarPark (XmlPullParser parser) throws XmlPullParserException, IOException {
         parser.require(XmlPullParser.START_TAG, namespace, "car_park");
@@ -110,16 +115,24 @@ public class ParkingXMLParser {
         return occupied;
     }
 
+    // Note: UC stores coordinates as {lng:y, lat:x} for some reason
     private HashSet readShapeCoords(XmlPullParser parser) throws IOException, XmlPullParserException {
         parser.require(XmlPullParser.START_TAG, namespace, "shape_coords");
         String temp = readText(parser);
         parser.require(XmlPullParser.END_TAG, namespace, "shape_coords");
 
-        HashSet<String> coords = new LinkedHashSet<String>(25);
+        HashSet<String> coords = new LinkedHashSet<>();
+        // Could probably be improved
+        temp = temp.replaceAll(Pattern.quote("},{"),";");
+        temp = temp.replaceAll("[{}:a-z]","");
+
 
         // Split coordinates and remove curly brackets
-        for (String coord:temp.split("\\S{31},")) {
-            coords.add(coord.substring(1,coord.length()-1));
+        for (String coord: temp.split(";")) {
+            // Get coordinates only (without lng or lat labels in)
+            String lng = coord.split(",")[0];
+            String lat = coord.split(",")[1];
+            coords.add(lat + "," + lng); // Lat before Long like a sane human being.
         }
         return coords;
     }
