@@ -1,5 +1,7 @@
 package com.jonno1809.ucparkingavailability;
 
+import com.google.android.gms.maps.model.LatLng;
+
 import java.util.HashSet;
 
 /**
@@ -27,24 +29,30 @@ public class CarPark {
         return shape_coords;
     }
 
+    public LatLng getCoords() {
+        return coords;
+    }
     public String getType() {
         return type;
     }
-
     private final String name;
     private final int capacity;
     private final int free;
     private final int occupied;
     private final HashSet shape_coords;
+
     private final String type;
 
+    private final LatLng coords;
+
     public CarPark(String name, int capacity, int free, int occupied, HashSet shape_coords,
-                   String type) {
+                   String type, LatLng coords) {
         this.name = name;
         this.capacity = capacity;
         this.free = free;
         this.occupied = occupied;
         this.shape_coords = shape_coords;
         this.type = type;
+        this.coords = coords;
     }
 }

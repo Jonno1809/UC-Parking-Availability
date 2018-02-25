@@ -9,7 +9,7 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polygon;
 import com.google.android.gms.maps.model.PolygonOptions;
@@ -29,6 +29,7 @@ import java.util.List;
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
     private GoogleMap mMap;
+
     private final String UC_URL = "https://www.canberra.edu.au/wsprd/UCMobile/parking.svc/availability";
 
     @Override
@@ -62,6 +63,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         DownloadXmlTask downloadXmlTask = new DownloadXmlTask();
         downloadXmlTask.execute(UC_URL);
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(ucLatLng,15));
+
     }
 
     private class DownloadXmlTask extends AsyncTask<String, Void, List<CarPark>> {
@@ -82,28 +84,36 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
             while (carParkIterator.hasNext()) {
                 CarPark carPark = carParkIterator.next();
-                HashSet coords = carPark.getShape_coords();
-                Iterator coordsIterator = coords.iterator();
+
+                HashSet carParkShape_coords = carPark.getShape_coords();
+                Iterator coordsIterator = carParkShape_coords.iterator();
                 PolygonOptions carParkEdges = new PolygonOptions();
 
                 // This could need improvement
                 while (coordsIterator.hasNext()) {
-                    try {
-                        Object coord = coordsIterator.next();
-                        String sLat = coord.toString().split(",")[0];
-                        String sLng = coord.toString().split(",")[1];
-                        double lat = Double.parseDouble(sLat);
-                        double lng = Double.parseDouble(sLng);
-                        LatLng shapeVertex = new LatLng(lat, lng);
-                        carParkEdges.add(shapeVertex);
-
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
+                    Object coord = coordsIterator.next();
+                    String sLat = coord.toString().split(",")[0];
+                    String sLng = coord.toString().split(",")[1];
+                    double lat = Double.parseDouble(sLat);
+                    double lng = Double.parseDouble(sLng);
+                    LatLng shapeVertex = new LatLng(lat, lng);
+                    carParkEdges.add(shapeVertex);
                 }
                 Polygon carParkShape = mMap.addPolygon(carParkEdges);
+                carParkShape.setClickable(true);
+                Marker carParkMarker = mMap.addMarker(new MarkerOptions()
+                        .position(carPark.getCoords()));
+                carParkMarker.setTitle(carPark.getName().toUpperCase());
+                carParkMarker.setSnippet("Free spaces: " + carPark.getFree());
+                carParkMarker.setVisible(false);
             }
 
+            mMap.setOnPolygonClickListener(new GoogleMap.OnPolygonClickListener() {
+                @Override
+                public void onPolygonClick(Polygon polygon) {
+
+                }
+            });
         }
     }
 
