@@ -161,14 +161,17 @@ public class ParkingXMLParser {
         HashSet<String> coords = new LinkedHashSet<>();
         // Could probably be improved
         temp = temp.replaceAll(Pattern.quote("},{"),";");
-        temp = temp.replaceAll("[{}:a-z]","");
+        temp = temp.replaceAll("[{}:]","");
 
 
         // Split coordinates and remove curly brackets
         for (String coord: temp.split(";")) {
             // Get coordinates only (without lng or lat labels in)
-            String lng = coord.split(",")[0];
-            String lat = coord.split(",")[1];
+            String[] latLng = coord.split(",");
+            String lng = latLng[0].contains("lng") ? latLng[0] : latLng[1];
+            String lat = latLng[1].contains("lat") ? latLng[1] : latLng[0];
+            lng = lng.replaceAll("[a-z]","");
+            lat = lat.replaceAll("[a-z]","");
             coords.add(lat + "," + lng); // Lat before Long like a sane human being.
         }
         return coords;
