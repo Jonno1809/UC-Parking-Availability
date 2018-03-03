@@ -3,6 +3,7 @@ package com.jonno1809.ucparkingavailability;
 import android.util.Xml;
 
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.PolygonOptions;
 
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
@@ -100,9 +101,10 @@ public class ParkingXMLParser {
         int capacity = 0;
         int free = 0;
         int occupied = 0;
-        HashSet shape_coords = null;
+//        HashSet shape_coords = null;
+        PolygonOptions carParkEdges = null;
         String type = null;
-        LatLng coords = null;
+        LatLng coords;
 
         while (parser.next() != XmlPullParser.END_TAG) {
             if (parser.getEventType() != XmlPullParser.START_TAG) {
@@ -115,13 +117,13 @@ public class ParkingXMLParser {
                 case "free": free = readFree(parser); break;
                 case "name": name = readName(parser); break;
                 case "occupancy": occupied = readOccupancy(parser); break;
-                case "shape_coords": shape_coords = readShapeCoords(parser); break;
+                case "shape_coords": carParkEdges = readShapeCoords(parser); break;
                 case "type": type = readType(parser); break;
                 default: skip(parser);
             }
         }
         coords = carParksCoordinates.get(name);
-        return new CarPark(name, capacity, free, occupied, shape_coords, type, coords);
+        return new CarPark(name, capacity, free, occupied, type, coords, carParkEdges);
     }
 
     private String readName (XmlPullParser parser) throws IOException, XmlPullParserException {
@@ -153,7 +155,7 @@ public class ParkingXMLParser {
     }
 
     // Note: UC stores coordinates as {lng:y, lat:x} for some reason
-    private HashSet readShapeCoords(XmlPullParser parser) throws IOException, XmlPullParserException {
+    private PolygonOptions readShapeCoords(XmlPullParser parser) throws IOException, XmlPullParserException {
         parser.require(XmlPullParser.START_TAG, namespace, "shape_coords");
         String temp = readText(parser);
         parser.require(XmlPullParser.END_TAG, namespace, "shape_coords");
@@ -163,18 +165,23 @@ public class ParkingXMLParser {
         temp = temp.replaceAll(Pattern.quote("},{"),";");
         temp = temp.replaceAll("[{}:]","");
 
+        PolygonOptions carParkEdges = new PolygonOptions();
 
         // Split coordinates and remove curly brackets
         for (String coord: temp.split(";")) {
             // Get coordinates only (without lng or lat labels in)
             String[] latLng = coord.split(",");
-            String lng = latLng[0].contains("lng") ? latLng[0] : latLng[1];
-            String lat = latLng[1].contains("lat") ? latLng[1] : latLng[0];
-            lng = lng.replaceAll("[a-z]","");
-            lat = lat.replaceAll("[a-z]","");
-            coords.add(lat + "," + lng); // Lat before Long like a sane human being.
+            String sLng = latLng[0].contains("lng") ? latLng[0] : latLng[1];
+            String sLat = latLng[1].contains("lat") ? latLng[1] : latLng[0];
+            sLng = sLng.replaceAll("[a-z]","");
+            sLat = sLat.replaceAll("[a-z]","");
+//            coords.add(lat + "," + lng); // Lat before Long like a sane human being.
+            double lat = Double.parseDouble(sLat);
+            double lng = Double.parseDouble(sLng);
+            LatLng shapeVertex = new LatLng(lat, lng);
+            carParkEdges.add(shapeVertex);
         }
-        return coords;
+        return carParkEdges;
     }
 
     private String readType(XmlPullParser parser) throws IOException, XmlPullParserException {
