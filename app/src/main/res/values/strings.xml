@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">UCParkingAvailability</string>
     <string name="title_activity_maps">UC Parking Availability</string>
+    <string name="title_activity_car_park_details">Car Park Details</string>
 </resources>

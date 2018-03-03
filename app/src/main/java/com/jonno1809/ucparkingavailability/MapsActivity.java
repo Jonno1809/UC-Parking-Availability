@@ -1,8 +1,11 @@
 package com.jonno1809.ucparkingavailability;
 
+import android.content.Intent;
 import android.os.AsyncTask;
+import android.os.Parcelable;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -92,14 +95,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                 Polygon carParkShape = mMap.addPolygon(carPark.getCarParkEdges());
                 carParkShape.setClickable(true);
-                final Marker carParkMarker = mMap.addMarker(new MarkerOptions()
-                        .position(carPark.getCoords()));
-                carParkMarker.setTitle(carPark.getName().toUpperCase());
-                carParkMarker.setSnippet("Free spaces: " + carPark.getFree());
-                if (carPark.getFree() == 0) {
-                    carParkMarker.setVisible(false);
-                }
-
+//                final Marker carParkMarker = mMap.addMarker(new MarkerOptions()
+//                        .position(carPark.getCoords()));
+//                carParkMarker.setTitle(carPark.getName().toUpperCase());
+//                carParkMarker.setSnippet("Free spaces: " + carPark.getFree());
+//                if (carPark.getFree() == 0) {
+//                    carParkMarker.setVisible(false);
+//                }
                 carParkHashMap.put(carParkShape.getId(), carPark);
             }
 
@@ -108,7 +110,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 @Override
                 public void onPolygonClick(Polygon polygon) {
                     CarPark carPark = carParkHashMap.get(polygon.getId());
-                    Toast.makeText(MapsActivity.this, carPark.getName(), Toast.LENGTH_SHORT).show();
+                    Intent intent = new Intent(getApplicationContext(), CarParkDetailsActivity.class);
+                    intent.putExtra("carPark", (Parcelable) carPark);
+                    startActivity(intent);
                 }
             };
             mMap.setOnPolygonClickListener(onPolygonClickListener);
