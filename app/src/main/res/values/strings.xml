@@ -2,4 +2,9 @@
     <string name="app_name">UCParkingAvailability</string>
     <string name="title_activity_maps">UC Parking Availability</string>
     <string name="title_activity_car_park_details">Car Park Details</string>
+    <string name="car_park_name">Name: %s</string>
+    <string name="car_park_free">Free: %d</string>
+    <string name="car_park_occupied">Occupied: %d</string>
+    <string name="car_park_type">Type: %s</string>
+    <string name="car_park_capactity">Capacity: %d</string>
 </resources>
