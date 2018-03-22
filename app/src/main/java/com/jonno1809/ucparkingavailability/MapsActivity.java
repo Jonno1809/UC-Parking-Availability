@@ -103,7 +103,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 //                if (carPark.getFree() == 0) {
 //                    carParkMarker.setVisible(false);
 //                }
-                if (carPark.getType() == "Student residence parking") {
+                if (carPark.getType().equals("Student residence parking")) {
                     carParkShape.setFillColor(Color.MAGENTA);
                 } else if (carPark.getFree() == 0) {
                     carParkShape.setFillColor(Color.RED);
