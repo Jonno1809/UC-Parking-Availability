@@ -1,6 +1,7 @@
 package com.jonno1809.ucparkingavailability;
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Parcelable;
 import android.support.v4.app.FragmentActivity;
@@ -102,6 +103,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 //                if (carPark.getFree() == 0) {
 //                    carParkMarker.setVisible(false);
 //                }
+                if (carPark.getType() == "Student residence parking") {
+                    carParkShape.setFillColor(Color.MAGENTA);
+                } else if (carPark.getFree() == 0) {
+                    carParkShape.setFillColor(Color.RED);
+                } else {
+                    carParkShape.setFillColor(Color.CYAN);
+                }
                 carParkHashMap.put(carParkShape.getId(), carPark);
             }
 

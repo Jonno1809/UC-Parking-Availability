@@ -23,7 +23,7 @@ public class CarPark implements Parcelable {
     private final LatLng coords;
     private final PolygonOptions carParkEdges;
 
-    public CarPark(String name, int capacity, int free, int occupied,
+    CarPark(String name, int capacity, int free, int occupied,
                    String type, LatLng coords, PolygonOptions carParkEdges) {
         this.name = name;
         this.capacity = capacity;
@@ -57,31 +57,31 @@ public class CarPark implements Parcelable {
         }
     };
 
-    public String getName() {
+    String getName() {
         return name;
     }
 
-    public int getCapacity() {
+    int getCapacity() {
         return capacity;
     }
 
-    public int getFree() {
+    int getFree() {
         return free;
     }
 
-    public int getOccupied() {
+    int getOccupied() {
         return occupied;
     }
 
-    public LatLng getCoords() {
+    LatLng getCoords() {
         return coords;
     }
 
-    public String getType() {
+    String getType() {
         return type;
     }
 
-    public PolygonOptions getCarParkEdges() {
+    PolygonOptions getCarParkEdges() {
         return carParkEdges;
     }
 
