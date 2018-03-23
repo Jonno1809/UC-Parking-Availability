@@ -12,8 +12,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -58,7 +56,7 @@ public class ParkingXMLParser {
         return coordinates;
     }
 
-    public List parse(InputStream inputStream) throws XmlPullParserException, IOException {
+    List parse(InputStream inputStream) throws XmlPullParserException, IOException {
         try {
             XmlPullParser parser = Xml.newPullParser();
             parser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, false);
@@ -71,7 +69,7 @@ public class ParkingXMLParser {
     }
 
     private List readCarParks(XmlPullParser parser) throws XmlPullParserException, IOException {
-        List car_parks = new ArrayList();
+        List<CarPark> car_parks = new ArrayList<CarPark>();
 
         parser.require(XmlPullParser.START_TAG, namespace, "parking_availability");
         while (parser.next() != XmlPullParser.END_TAG) {
@@ -101,7 +99,6 @@ public class ParkingXMLParser {
         int capacity = 0;
         int free = 0;
         int occupied = 0;
-//        HashSet shape_coords = null;
         PolygonOptions carParkEdges = null;
         String type = null;
         LatLng coords;
@@ -159,8 +156,6 @@ public class ParkingXMLParser {
         parser.require(XmlPullParser.START_TAG, namespace, "shape_coords");
         String temp = readText(parser);
         parser.require(XmlPullParser.END_TAG, namespace, "shape_coords");
-
-        HashSet<String> coords = new LinkedHashSet<>();
         // Could probably be improved
         temp = temp.replaceAll(Pattern.quote("},{"),";");
         temp = temp.replaceAll("[{}:]","");
@@ -175,7 +170,6 @@ public class ParkingXMLParser {
             String sLat = latLng[1].contains("lat") ? latLng[1] : latLng[0];
             sLng = sLng.replaceAll("[a-z]","");
             sLat = sLat.replaceAll("[a-z]","");
-//            coords.add(lat + "," + lng); // Lat before Long like a sane human being.
             double lat = Double.parseDouble(sLat);
             double lng = Double.parseDouble(sLng);
             LatLng shapeVertex = new LatLng(lat, lng);

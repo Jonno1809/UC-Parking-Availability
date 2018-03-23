@@ -44,19 +44,6 @@ public class CarPark implements Parcelable {
         this.carParkEdges = in.readParcelable(PolygonOptions.class.getClassLoader());
     }
 
-    public static final Parcelable.Creator<CarPark> CREATOR = new Parcelable.Creator<CarPark>() {
-
-        @Override
-        public CarPark createFromParcel(Parcel source) {
-            return new CarPark(source);
-        }
-
-        @Override
-        public CarPark[] newArray(int size) {
-            return new CarPark[size];
-        }
-    };
-
     String getName() {
         return name;
     }
@@ -89,6 +76,19 @@ public class CarPark implements Parcelable {
     public int describeContents() {
         return 0;
     }
+
+    public static final Parcelable.Creator<CarPark> CREATOR = new Parcelable.Creator<CarPark>() {
+
+        @Override
+        public CarPark createFromParcel(Parcel source) {
+            return new CarPark(source);
+        }
+
+        @Override
+        public CarPark[] newArray(int size) {
+            return new CarPark[size];
+        }
+    };
 
     @Override
     public void writeToParcel(Parcel parcel, int flags) {
