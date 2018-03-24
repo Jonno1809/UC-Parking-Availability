@@ -6,8 +6,6 @@ import android.os.Parcelable;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.PolygonOptions;
 
-import java.util.HashSet;
-
 /**
  * Created by Jonno on 22/02/2018.
  * With help from http://en.proft.me/2017/02/28/pass-object-between-activities-android-parcelable/
