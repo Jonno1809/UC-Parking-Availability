@@ -103,12 +103,19 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 //                if (carPark.getFree() == 0) {
 //                    carParkMarker.setVisible(false);
 //                }
-                if (carPark.getType().equals("Student residence parking")) {
-                    carParkShape.setFillColor(Color.MAGENTA);
+                String type = carPark.getType();
+                if (!type.contains("e-Permit")) {
+                    /* Purple */
+                    carParkShape.setFillColor(Color.argb(153,156,117,255));
+                    carParkShape.setStrokeColor(Color.argb(255, 156, 117, 255));
                 } else if (carPark.getFree() == 0) {
-                    carParkShape.setFillColor(Color.RED);
+                    /* Red */
+                    carParkShape.setFillColor(Color.argb(153,211,0,0));
+                    carParkShape.setStrokeColor(Color.argb(255,221,0,0));
                 } else {
-                    carParkShape.setFillColor(Color.CYAN);
+                    /* Grey */
+                    carParkShape.setFillColor(Color.argb(153,180,180,180));
+                    carParkShape.setStrokeColor(Color.argb(255,180,180,180));
                 }
                 carParkHashMap.put(carParkShape.getId(), carPark);
             }
