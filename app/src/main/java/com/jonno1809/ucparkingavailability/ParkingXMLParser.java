@@ -56,7 +56,7 @@ public class ParkingXMLParser {
         return coordinates;
     }
 
-    List parse(InputStream inputStream) throws XmlPullParserException, IOException {
+    List<CarPark> parse(InputStream inputStream) throws XmlPullParserException, IOException {
         try {
             XmlPullParser parser = Xml.newPullParser();
             parser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, false);
@@ -68,7 +68,7 @@ public class ParkingXMLParser {
         }
     }
 
-    private List readCarParks(XmlPullParser parser) throws XmlPullParserException, IOException {
+    private List<CarPark> readCarParks(XmlPullParser parser) throws XmlPullParserException, IOException {
         List<CarPark> car_parks = new ArrayList<CarPark>();
 
         parser.require(XmlPullParser.START_TAG, namespace, "parking_availability");

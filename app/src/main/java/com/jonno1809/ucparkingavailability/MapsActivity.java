@@ -87,7 +87,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             final int EMPTY_GREEN = 158;
             final int EMPTY_BLUE = 221;
             final int FULL_RGB = 180;
-            
+
             // Could be improved by changing car park list to hashmap or something
             Iterator<CarPark> carParkIterator = result.iterator();
             final HashMap<String, CarPark> carParkHashMap = new HashMap<>(result.size());
@@ -101,7 +101,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 Polygon carParkShape = mMap.addPolygon(carPark.getCarParkEdges());
                 carParkShape.setClickable(true);
 
-                if (!type.contains("e-Permit")) {
+                if (!type.contains("e-Permit") || capacity < 0) {
                     /* Purple */
                     carParkShape.setFillColor(Color.argb(153,156,117,255));
                     carParkShape.setStrokeColor(Color.rgb( 156, 117, 255));
@@ -113,22 +113,19 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     carParkShape.setFillColor(Color.argb(153, 255,112,56));
                     carParkShape.setStrokeColor(Color.rgb(255,112,56));
                 } else {
-                    /* Grey */
+                    /* Blue or grey */
                     float percent = free / capacity;
-                    int fillColour = Color.argb(153, FULL_RGB - Math.round((FULL_RGB - EMPTY_RED) * percent),
-                            FULL_RGB - Math.round((FULL_RGB - EMPTY_GREEN) * percent),
-                            FULL_RGB - Math.round((FULL_RGB - EMPTY_BLUE) * percent));
-                    int strokeColour = Color.rgb(FULL_RGB - Math.round((FULL_RGB - EMPTY_RED) * percent),
-                            FULL_RGB - Math.round((FULL_RGB - EMPTY_GREEN) * percent),
-                            FULL_RGB - Math.round((FULL_RGB - EMPTY_BLUE) * percent));
-//                    carParkShape.setFillColor(Color.argb(153,180,180,180));
-//                    carParkShape.setStrokeColor(Color.rgb(180,180,180));
+                    int red = FULL_RGB - Math.round((FULL_RGB - EMPTY_RED) * percent);
+                    int green = FULL_RGB - Math.round((FULL_RGB - EMPTY_GREEN) * percent);
+                    int blue = FULL_RGB - Math.round((FULL_RGB - EMPTY_BLUE) * percent);
+                    int fillColour = Color.argb(153, red, green, blue);
+                    int strokeColour = Color.rgb(red, green, blue);
+
                     carParkShape.setFillColor(fillColour);
                     carParkShape.setStrokeColor(strokeColour);
                 }
                 carParkHashMap.put(carParkShape.getId(), carPark);
             }
-
 
             GoogleMap.OnPolygonClickListener onPolygonClickListener = new GoogleMap.OnPolygonClickListener() {
                 @Override
@@ -146,7 +143,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private List<CarPark> getCarParkXmlFromNetwork(String urlString) throws XmlPullParserException, IOException {
         InputStream stream = null;
         ParkingXMLParser parkingXMLParser = new ParkingXMLParser();
-        List<CarPark> carParks = null;
+        List<CarPark> carParks;
 
         try {
             stream = downloadUrl(urlString);
