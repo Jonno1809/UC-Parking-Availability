@@ -2,9 +2,12 @@ package com.jonno1809.ucparkingavailability;
 
 import android.content.Intent;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -26,7 +29,7 @@ import java.util.Iterator;
 import java.util.List;
 
 
-public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
+public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, CarParkDetailsFragment.OnCarParkShapeSelectedListener {
 
     private GoogleMap mMap;
 
@@ -64,6 +67,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         DownloadXmlTask downloadXmlTask = new DownloadXmlTask();
         downloadXmlTask.execute(UC_URL);
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(ucLatLng,15));
+
+    }
+
+    @Override
+    public void onCarParkShapeSelected(Uri uri) {
 
     }
 
@@ -130,9 +138,18 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 @Override
                 public void onPolygonClick(Polygon polygon) {
                     CarPark carPark = carParkHashMap.get(polygon.getId());
-                    Intent intent = new Intent(getApplicationContext(), CarParkDetailsActivity.class);
-                    intent.putExtra("carPark", carPark);
-                    startActivity(intent);
+//                    Intent intent = new Intent(getApplicationContext(), CarParkDetailsActivity.class);
+//                    intent.putExtra("carPark", carPark);
+//                    startActivity(intent);
+                    CarParkDetailsFragment carParkDetailsFragment = new CarParkDetailsFragment();
+                    Bundle args = new Bundle();
+                    args.putParcelable("carPark", carPark);
+                    carParkDetailsFragment.setArguments(args);
+                    FragmentManager fragmentManager = getSupportFragmentManager();
+                    FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+                    fragmentTransaction.replace(R.id.map, carParkDetailsFragment);
+                    fragmentTransaction.addToBackStack(null);
+                    fragmentTransaction.commit();
                 }
             };
             mMap.setOnPolygonClickListener(onPolygonClickListener);
@@ -166,5 +183,5 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         return connection.getInputStream();
     }
 
-//    private void showCarParkDetailsOnClick(CarPark carPark,)
+
 }
