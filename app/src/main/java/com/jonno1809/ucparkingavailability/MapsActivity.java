@@ -34,7 +34,8 @@ import java.util.Iterator;
 import java.util.List;
 
 
-public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback, CarParkDetailsFragment
+public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback,
+        CarParkDetailsFragment
         .OnCarParkShapeSelectedListener {
 
     private GoogleMap mMap;
@@ -207,14 +208,21 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     public void onBackPressed() {
         FragmentManager fragmentManager = getSupportFragmentManager();
         if (fragmentManager.getBackStackEntryCount() > 0) {
-            fragmentManager.popBackStack();
-            ActionBar actionBar = getSupportActionBar();
-            if (actionBar != null) {
-                actionBar.setDisplayHomeAsUpEnabled(false);
-                actionBar.setDisplayShowHomeEnabled(false);
+            fragmentManager.popBackStackImmediate();
+            if (fragmentManager.getBackStackEntryCount() == 0) {
+                displayActionBarUpArrow(false);
             }
         } else {
+            displayActionBarUpArrow(false);
             super.onBackPressed();
+        }
+    }
+
+    private void displayActionBarUpArrow(boolean isDisplayed) {
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setDisplayHomeAsUpEnabled(isDisplayed);
+            actionBar.setDisplayShowHomeEnabled(isDisplayed);
         }
     }
 }

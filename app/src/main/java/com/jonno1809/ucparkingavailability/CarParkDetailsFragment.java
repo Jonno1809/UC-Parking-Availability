@@ -110,7 +110,7 @@ public class CarParkDetailsFragment extends Fragment {
             mListener = (OnCarParkShapeSelectedListener) context;
         } else {
             throw new RuntimeException(context.toString()
-                    + " must implement OnFragmentInteractionListener");
+                    + " must implement OnCarParkShapeSelectedListener");
         }
     }
 
