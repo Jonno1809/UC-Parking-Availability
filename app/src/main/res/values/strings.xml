@@ -7,7 +7,4 @@
     <string name="car_park_occupied">Occupied: %d</string>
     <string name="car_park_type">Type: %s</string>
     <string name="car_park_capactity">Capacity: %d</string>
-
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>
