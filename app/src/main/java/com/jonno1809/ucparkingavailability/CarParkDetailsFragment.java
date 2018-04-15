@@ -33,6 +33,12 @@ public class CarParkDetailsFragment extends Fragment {
     private String cpType;
     private int cpCapacity;
 
+    private TextView tvName;
+    private TextView tvFree;
+    private TextView tvOccupied;
+    private TextView tvType;
+    private TextView tvCapacity;
+
     private OnCarParkShapeSelectedListener mListener;
 
     public CarParkDetailsFragment() {
@@ -67,6 +73,12 @@ public class CarParkDetailsFragment extends Fragment {
             cpOccupied = carPark.getOccupied();
             cpType = carPark.getType();
             cpCapacity = carPark.getCapacity();
+        } else {
+            cpName = "N/A";
+            cpFree = 0;
+            cpOccupied = 0;
+            cpType = "N/A";
+            cpCapacity = 0;
         }
 
         ActionBar actionBar = ((AppCompatActivity)getActivity()).getSupportActionBar();
@@ -81,25 +93,18 @@ public class CarParkDetailsFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_car_park_details, container, false);
-        TextView tvName = view.findViewById(R.id.tvName);
-        TextView tvFree = view.findViewById(R.id.tvFree);
-        TextView tvOccupied = view.findViewById(R.id.tvOccupied);
-        TextView tvType = view.findViewById(R.id.tvType);
-        TextView tvCapacity = view.findViewById(R.id.tvCapacity);
+        tvName = view.findViewById(R.id.tvName);
+        tvFree = view.findViewById(R.id.tvFree);
+        tvOccupied = view.findViewById(R.id.tvOccupied);
+        tvType = view.findViewById(R.id.tvType);
+        tvCapacity = view.findViewById(R.id.tvCapacity);
 
-        if (carPark != null) {
-            tvName.setText(getString(R.string.car_park_name, cpName));
-            tvFree.setText(getString(R.string.car_park_free, cpFree));
-            tvOccupied.setText(getString(R.string.car_park_occupied, cpOccupied));
-            tvType.setText(getString(R.string.car_park_type, cpType));
-            tvCapacity.setText(getString(R.string.car_park_capactity, cpCapacity));
-        } else {
-            tvName.setText(getString(R.string.car_park_name, "N/A"));
-            tvFree.setText(getString(R.string.car_park_free, 0));
-            tvOccupied.setText(getString(R.string.car_park_occupied, 0));
-            tvType.setText(getString(R.string.car_park_type, "N/A"));
-            tvCapacity.setText(getString(R.string.car_park_capactity, 0));
-        }
+        tvName.setText(getString(R.string.car_park_name, cpName));
+        tvFree.setText(getString(R.string.car_park_free, cpFree));
+        tvOccupied.setText(getString(R.string.car_park_occupied, cpOccupied));
+        tvType.setText(getString(R.string.car_park_type, cpType));
+        tvCapacity.setText(getString(R.string.car_park_capactity, cpCapacity));
+
         view.setBackgroundColor(Color.WHITE);
         return view;
     }
