@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
@@ -134,4 +135,39 @@ public class CarParkDetailsFragment extends Fragment {
         // TODO: Update argument type and name
         void onCarParkShapeSelected(Uri uri);
     }
+
+//    @Override
+//    public void onSaveInstanceState(Bundle savedInstanceState) {
+//        View view = getView();
+//        if (view != null) {
+//            TextView tvName = view.findViewById(R.id.tvName);
+//            TextView tvFree = view.findViewById(R.id.tvFree);
+//            TextView tvOccupied = view.findViewById(R.id.tvOccupied);
+//            TextView tvType = view.findViewById(R.id.tvType);
+//            TextView tvCapacity = view.findViewById(R.id.tvCapacity);
+//
+//            String name = tvName.getText().toString();
+//            String free = tvFree.getText().toString();
+//            String occupied = tvOccupied.getText().toString();
+//            String type = tvType.getText().toString();
+//            String capacity = tvCapacity.getText().toString();
+//
+//            String[] cpDetails = {name, free, occupied, type, capacity};
+////            savedInstanceState.putStringArray("cpDetails", cpDetails);
+//          for (String string : cpDetails) {
+//              savedInstanceState.putString('"' + string + '"', string);
+//          }
+//        }
+//
+//        super.onSaveInstanceState(savedInstanceState);
+//    }
+//
+//    @Override
+//    public void onViewStateRestored(@Nullable Bundle savedInstanceState) {
+//        super.onViewStateRestored(savedInstanceState);
+//
+//        if (savedInstanceState != null) {
+//
+//        }
+//    }
 }
