@@ -23,13 +23,21 @@ import android.widget.Toolbar;
  * create an instance of this fragment.
  */
 public class CarParkDetailsFragment extends Fragment {
-    // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
+    private static final String CARPARK_PARAM = "carPark";
 
-    // TODO: Rename and change types of parameters
     private CarPark carPark;
+    private String cpName;
+    private int cpFree;
+    private int cpOccupied;
+    private String cpType;
+    private int cpCapacity;
+
+    private TextView tvName;
+    private TextView tvFree;
+    private TextView tvOccupied;
+    private TextView tvType;
+    private TextView tvCapacity;
 
     private OnCarParkShapeSelectedListener mListener;
 
@@ -37,30 +45,42 @@ public class CarParkDetailsFragment extends Fragment {
         // Required empty public constructor
     }
 
-//    /**
-//     * Use this factory method to create a new instance of
-//     * this fragment using the provided parameters.
-//     *
-//     * @param param1 Parameter 1.
-//     * @param param2 Parameter 2.
-//     * @return A new instance of fragment CarParkDetailsFragment.
-//     */
-//    // TODO: Rename and change types and number of parameters
-//    public static CarParkDetailsFragment newInstance(String param1, String param2) {
-//        CarParkDetailsFragment fragment = new CarParkDetailsFragment();
-//        Bundle args = new Bundle();
-//        args.putString(ARG_PARAM1, param1);
-//        args.putString(ARG_PARAM2, param2);
-//        fragment.setArguments(args);
-//        return fragment;
-//    }
+    /**
+     * Creates a new instance of this fragment
+     *
+     * @param carPark The carpark object (usually retrieved from tapping a polygon on the map)
+     * @return A new instance of fragment CarParkDetailsFragment.
+     */
+
+    public static CarParkDetailsFragment newInstance(CarPark carPark) {
+        CarParkDetailsFragment fragment = new CarParkDetailsFragment();
+        Bundle args = new Bundle();
+        args.putParcelable(CARPARK_PARAM, carPark);
+        fragment.setArguments(args);
+        return fragment;
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            carPark = getArguments().getParcelable("carPark");
+            carPark = getArguments().getParcelable(CARPARK_PARAM);
         }
+
+        if (carPark != null) {
+            cpName = carPark.getName();
+            cpFree = carPark.getFree();
+            cpOccupied = carPark.getOccupied();
+            cpType = carPark.getType();
+            cpCapacity = carPark.getCapacity();
+        } else {
+            cpName = "N/A";
+            cpFree = 0;
+            cpOccupied = 0;
+            cpType = "N/A";
+            cpCapacity = 0;
+        }
+
         ActionBar actionBar = ((AppCompatActivity)getActivity()).getSupportActionBar();
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
@@ -73,25 +93,18 @@ public class CarParkDetailsFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_car_park_details, container, false);
-        TextView tvName = view.findViewById(R.id.tvName);
-        TextView tvFree = view.findViewById(R.id.tvFree);
-        TextView tvOccupied = view.findViewById(R.id.tvOccupied);
-        TextView tvType = view.findViewById(R.id.tvType);
-        TextView tvCapacity = view.findViewById(R.id.tvCapacity);
+        tvName = view.findViewById(R.id.tvName);
+        tvFree = view.findViewById(R.id.tvFree);
+        tvOccupied = view.findViewById(R.id.tvOccupied);
+        tvType = view.findViewById(R.id.tvType);
+        tvCapacity = view.findViewById(R.id.tvCapacity);
 
-        if (carPark != null) {
-            tvName.setText(getString(R.string.car_park_name, carPark.getName()));
-            tvFree.setText(getString(R.string.car_park_free, carPark.getFree()));
-            tvOccupied.setText(getString(R.string.car_park_occupied, carPark.getOccupied()));
-            tvType.setText(getString(R.string.car_park_type, carPark.getType()));
-            tvCapacity.setText(getString(R.string.car_park_capactity, carPark.getCapacity()));
-        } else {
-            tvName.setText(getString(R.string.car_park_name, "N/A"));
-            tvFree.setText(getString(R.string.car_park_free, 0));
-            tvOccupied.setText(getString(R.string.car_park_occupied, 0));
-            tvType.setText(getString(R.string.car_park_type, "N/A"));
-            tvCapacity.setText(getString(R.string.car_park_capactity, 0));
-        }
+        tvName.setText(getString(R.string.car_park_name, cpName));
+        tvFree.setText(getString(R.string.car_park_free, cpFree));
+        tvOccupied.setText(getString(R.string.car_park_occupied, cpOccupied));
+        tvType.setText(getString(R.string.car_park_type, cpType));
+        tvCapacity.setText(getString(R.string.car_park_capactity, cpCapacity));
+
         view.setBackgroundColor(Color.WHITE);
         return view;
     }
