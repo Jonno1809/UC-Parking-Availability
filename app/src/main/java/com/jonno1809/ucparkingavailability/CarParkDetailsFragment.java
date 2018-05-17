@@ -12,7 +12,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-import android.widget.Toolbar;
 
 
 /**
@@ -25,8 +24,13 @@ import android.widget.Toolbar;
  */
 public class CarParkDetailsFragment extends Fragment {
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String CARPARK_PARAM = "carPark";
-
+    // Keys used for bundles
+    private static final String CARPARK_KEY = "carPark";
+    private static final String NAME_KEY = "name";
+    private static final String FREE_KEY = "free";
+    private static final String OCCUPIED_KEY = "occupied";
+    private static final String TYPE_KEY = "type";
+    private static final String CAPACITY_KEY = "capacity";
     private CarPark carPark;
     private String cpName;
     private int cpFree;
@@ -56,7 +60,7 @@ public class CarParkDetailsFragment extends Fragment {
     public static CarParkDetailsFragment newInstance(CarPark carPark) {
         CarParkDetailsFragment fragment = new CarParkDetailsFragment();
         Bundle args = new Bundle();
-        args.putParcelable(CARPARK_PARAM, carPark);
+        args.putParcelable(CARPARK_KEY, carPark);
         fragment.setArguments(args);
         return fragment;
     }
@@ -65,7 +69,7 @@ public class CarParkDetailsFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            carPark = getArguments().getParcelable(CARPARK_PARAM);
+            carPark = getArguments().getParcelable(CARPARK_KEY);
         }
 
         if (carPark != null) {
@@ -149,10 +153,10 @@ public class CarParkDetailsFragment extends Fragment {
         void onCarParkShapeSelected(Uri uri);
     }
 
-//    @Override
-//    public void onSaveInstanceState(Bundle savedInstanceState) {
-//        View view = getView();
-//        if (view != null) {
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        View view = getView();
+        if (view != null) {
 //            TextView tvName = view.findViewById(R.id.tvName);
 //            TextView tvFree = view.findViewById(R.id.tvFree);
 //            TextView tvOccupied = view.findViewById(R.id.tvOccupied);
@@ -170,17 +174,41 @@ public class CarParkDetailsFragment extends Fragment {
 //          for (String string : cpDetails) {
 //              savedInstanceState.putString('"' + string + '"', string);
 //          }
-//        }
-//
-//        super.onSaveInstanceState(savedInstanceState);
-//    }
-//
+
+            outState.putString(NAME_KEY, cpName);
+            outState.putInt(FREE_KEY, cpFree);
+            outState.putInt(OCCUPIED_KEY, cpOccupied);
+            outState.putString(TYPE_KEY, cpType);
+            outState.putInt(CAPACITY_KEY, cpCapacity);
+        }
+
+        super.onSaveInstanceState(outState);
+    }
+
 //    @Override
 //    public void onViewStateRestored(@Nullable Bundle savedInstanceState) {
 //        super.onViewStateRestored(savedInstanceState);
 //
 //        if (savedInstanceState != null) {
-//
+//            cpName = savedInstanceState.getString(NAME_KEY);
+//            cpFree = savedInstanceState.getInt(FREE_KEY);
+//            cpOccupied = savedInstanceState.getInt(OCCUPIED_KEY);
+//            cpType = savedInstanceState.getString(TYPE_KEY);
+//            cpCapacity = savedInstanceState.getInt(CAPACITY_KEY);
 //        }
 //    }
+
+
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        if (savedInstanceState != null) {
+            cpName = savedInstanceState.getString(NAME_KEY);
+            cpFree = savedInstanceState.getInt(FREE_KEY);
+            cpOccupied = savedInstanceState.getInt(OCCUPIED_KEY);
+            cpType = savedInstanceState.getString(TYPE_KEY);
+            cpCapacity = savedInstanceState.getInt(CAPACITY_KEY);
+        }
+
+    }
 }
