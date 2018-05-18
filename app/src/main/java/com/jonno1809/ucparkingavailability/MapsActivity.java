@@ -1,16 +1,12 @@
 package com.jonno1809.ucparkingavailability;
 
-import android.content.Intent;
-import android.drm.DrmStore;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
-import android.support.v4.app.NavUtils;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.view.MenuItem;
@@ -30,9 +26,8 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.HashMap;
-import java.util.Iterator;
-
-import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback,
@@ -86,10 +81,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     }
 
-    private class DownloadXmlTask extends AsyncTask<String, Void, List<CarPark>> {
+    private class DownloadXmlTask extends AsyncTask<String, Void, HashMap<String, CarPark>> {
 
         @Override
-        protected List<CarPark> doInBackground(String... urls) {
+        protected HashMap<String, CarPark> doInBackground(String... urls) {
             try {
                 return getCarParkXmlFromNetwork(urls[0]);
             } catch (XmlPullParserException | IOException e) {
@@ -99,37 +94,41 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
 
         @Override
-        protected void onPostExecute(List<CarPark> result) {
+        protected void onPostExecute(HashMap<String, CarPark> result) {
             // For calculating colour percentages
             final int EMPTY_RED = 0;
             final int EMPTY_GREEN = 158;
             final int EMPTY_BLUE = 221;
             final int FULL_RGB = 180;
 
+            final HashMap<String, CarPark> carParks = result;
+            Set<Map.Entry<String, CarPark>> carParksEntries = result.entrySet();
             // Could be improved by changing car park list to hashmap or something
-            Iterator<CarPark> carParkIterator = result.iterator();
-            final HashMap<String, CarPark> carParkHashMap = new HashMap<>(result.size());
+//            Iterator<CarPark> carParkIterator = result.iterator();
+//            final HashMap<String, CarPark> carParkHashMap = result;
 
-            while (carParkIterator.hasNext()) {
-                final CarPark carPark = carParkIterator.next();
+            for (Map.Entry<String, CarPark> carParkMapEntry : carParksEntries) {
+                CarPark carPark = carParkMapEntry.getValue();
                 String type = carPark.getType();
                 float free = carPark.getFree();
                 float capacity = carPark.getCapacity();
+                String polygonTag = carPark.getName();
 
                 Polygon carParkShape = mMap.addPolygon(carPark.getCarParkEdges());
+                carParkShape.setTag(polygonTag);
                 carParkShape.setClickable(true);
 
                 if (!type.contains("e-Permit") || capacity < 0) {
                     /* Purple */
-                    carParkShape.setFillColor(Color.argb(153,156,117,255));
-                    carParkShape.setStrokeColor(Color.rgb( 156, 117, 255));
+                    carParkShape.setFillColor(Color.argb(153, 156, 117, 255));
+                    carParkShape.setStrokeColor(Color.rgb(156, 117, 255));
                 } else if (free == 0) {
                     /* Red */
-                    carParkShape.setFillColor(Color.argb(153,211,0,0));
-                    carParkShape.setStrokeColor(Color.rgb(221,0,0));
+                    carParkShape.setFillColor(Color.argb(153, 211, 0, 0));
+                    carParkShape.setStrokeColor(Color.rgb(221, 0, 0));
                 } else if (free < 15) {
-                    carParkShape.setFillColor(Color.argb(153, 255,112,56));
-                    carParkShape.setStrokeColor(Color.rgb(255,112,56));
+                    carParkShape.setFillColor(Color.argb(153, 255, 112, 56));
+                    carParkShape.setStrokeColor(Color.rgb(255, 112, 56));
                 } else {
                     /* Blue or grey */
                     float percent = free / capacity;
@@ -142,13 +141,14 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     carParkShape.setFillColor(fillColour);
                     carParkShape.setStrokeColor(strokeColour);
                 }
-                carParkHashMap.put(carParkShape.getId(), carPark);
+//                carParkHashMap.put(carParkShape.getId(), carPark);
             }
 
             GoogleMap.OnPolygonClickListener onPolygonClickListener = new GoogleMap.OnPolygonClickListener() {
                 @Override
                 public void onPolygonClick(Polygon polygon) {
-                    CarPark carPark = carParkHashMap.get(polygon.getId());
+                    String carParkKey = (String) polygon.getTag();
+                    CarPark carPark = carParks.get(carParkKey);
 //                    Intent intent = new Intent(getApplicationContext(), CarParkDetailsActivity.class);
 //                    intent.putExtra("carPark", carPark);
 //                    startActivity(intent);
@@ -167,10 +167,12 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
     }
 
-    private List<CarPark> getCarParkXmlFromNetwork(String urlString) throws XmlPullParserException, IOException {
+    private HashMap<String, CarPark> getCarParkXmlFromNetwork(String urlString) throws
+            XmlPullParserException,
+            IOException {
         InputStream stream = null;
         ParkingXMLParser parkingXMLParser = new ParkingXMLParser();
-        List<CarPark> carParks;
+        HashMap<String, CarPark> carParks;
 
         try {
             stream = downloadUrl(urlString);
