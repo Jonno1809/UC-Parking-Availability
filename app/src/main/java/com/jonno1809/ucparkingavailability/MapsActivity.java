@@ -34,6 +34,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         .OnCarParkShapeSelectedListener {
 
     private GoogleMap mMap;
+    private final String CARPARKDETAILS_FRAGMENT_TAG = "carParkDetailsFragment";
 
     private final String UC_URL = "https://www.canberra.edu.au/wsprd/UCMobile/parking.svc/availability";
 
@@ -41,10 +42,13 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
+
+        if (savedInstanceState == null) {
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
-                .findFragmentById(R.id.map);
-        mapFragment.getMapAsync(this);
+            SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
+                    .findFragmentById(R.id.map);
+            mapFragment.getMapAsync(this);
+        }
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
             actionBar.show();
@@ -158,7 +162,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
                     Fragment carParkDetailsFragment = CarParkDetailsFragment.newInstance(carPark);
                     fragmentTransaction.replace(R.id.map, carParkDetailsFragment);
-                    fragmentTransaction.addToBackStack(null);
+                    fragmentTransaction.addToBackStack(CARPARKDETAILS_FRAGMENT_TAG);
                     fragmentTransaction.commit();
                 }
             };
