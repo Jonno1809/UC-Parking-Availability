@@ -48,11 +48,14 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         FragmentManager fragmentManager = getSupportFragmentManager();
 
         if (savedInstanceState != null) {
-            Fragment currentFragment = fragmentManager.getFragment
-                    (savedInstanceState, CURRENT_FRAGMENT_TAG);
-            fragmentManager.beginTransaction().replace(R.id.fragmentContainer,
-                    currentFragment)
+            Fragment currentFragment = fragmentManager.getFragment(savedInstanceState, CURRENT_FRAGMENT_TAG);
+
+            fragmentManager.beginTransaction().replace(R.id.fragmentContainer, currentFragment)
                     .commit();
+            if (currentFragment.getTag().equals(MAP_FRAGMENT_TAG)){
+                // This could be better - find a way to save map polygons
+                ((SupportMapFragment)currentFragment).getMapAsync(this);
+            }
         } else {
             // Obtain the SupportMapFragment and get notified when the map is ready to be used.
             SupportMapFragment mapFragment = (SupportMapFragment) fragmentManager
