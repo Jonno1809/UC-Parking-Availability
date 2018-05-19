@@ -26,7 +26,6 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.LinkedHashMap;
-import java.util.Set;
 
 
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback,
@@ -37,6 +36,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private final String CARPARKDETAILS_FRAGMENT_TAG = "carParkDetailsFragment";
     private final String MAP_FRAGMENT_TAG = "mapFragment";
     private final String CURRENT_FRAGMENT_TAG = "currentFragment";
+
+    private LinkedHashMap<String, CarPark> carParks = new LinkedHashMap<>();
 
     private final String UC_URL = "https://www.canberra.edu.au/wsprd/UCMobile/parking.svc/availability";
 
@@ -53,7 +54,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             fragmentManager.beginTransaction().replace(R.id.fragmentContainer, currentFragment)
                     .commit();
             if (currentFragment.getTag().equals(MAP_FRAGMENT_TAG)){
-                // This could be better - find a way to save map polygons
                 ((SupportMapFragment)currentFragment).getMapAsync(this);
             }
         } else {
@@ -93,8 +93,12 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         LatLng ucLatLng = new LatLng(-35.237894, 149.084055);
         mMap.addMarker(new MarkerOptions().position(ucLatLng).title("University of Canberra"));
         mMap.getUiSettings().setZoomControlsEnabled(true);
-        DownloadXmlTask downloadXmlTask = new DownloadXmlTask();
-        downloadXmlTask.execute(UC_URL);
+        if (carParks.isEmpty()) {
+            DownloadXmlTask downloadXmlTask = new DownloadXmlTask();
+            downloadXmlTask.execute(UC_URL);
+        } else {
+            addCarParkShapesToMap(carParks);
+        }
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(ucLatLng, 15));
 
     }
@@ -118,82 +122,74 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         @Override
         protected void onPostExecute(LinkedHashMap<String, CarPark> result) {
-            // For calculating colour percentages
-            final int EMPTY_RED = 0;
-            final int EMPTY_GREEN = 158;
-            final int EMPTY_BLUE = 221;
-            final int FULL_RGB = 180;
+            carParks.putAll(result);
+            addCarParkShapesToMap(carParks);
+        }
+    }
 
-            final LinkedHashMap<String, CarPark> carParks = result;
-            Set<String> carParkKeys = result.keySet();
-            // Could be improved by changing car park list to hashmap or something
-//            Iterator<CarPark> carParkIterator = result.
-//            final HashMap<String, CarPark> carParkHashMap = result;
+    private void addCarParkShapesToMap(final LinkedHashMap<String, CarPark> carParks) {
+        // For calculating colour percentages
+        final int EMPTY_RED = 0;
+        final int EMPTY_GREEN = 158;
+        final int EMPTY_BLUE = 221;
+        final int FULL_RGB = 180;
 
-            for (String carParkKey : carParkKeys) {
-                CarPark carPark = carParks.get(carParkKey);
-                String type = carPark.getType();
-                float free = carPark.getFree();
-                float capacity = carPark.getCapacity();
-                String polygonTag = carPark.getName();
+        for (String carParkKey : carParks.keySet()) {
+            CarPark carPark = carParks.get(carParkKey);
+            String type = carPark.getType();
+            float free = carPark.getFree();
+            float capacity = carPark.getCapacity();
 
-                Polygon carParkShape = mMap.addPolygon(carPark.getCarParkEdges());
-                carParkShape.setTag(polygonTag);
-                carParkShape.setClickable(true);
+            Polygon carParkShape = mMap.addPolygon(carPark.getCarParkEdges());
+            carParkShape.setClickable(true);
+            carParkShape.setTag(carPark.getName());
 
-                if (!type.contains("e-Permit") || capacity < 0) {
-                    /* Purple */
-                    carParkShape.setFillColor(Color.argb(153, 156, 117, 255));
-                    carParkShape.setStrokeColor(Color.rgb(156, 117, 255));
-                } else if (free == 0) {
-                    /* Red */
-                    carParkShape.setFillColor(Color.argb(153, 211, 0, 0));
-                    carParkShape.setStrokeColor(Color.rgb(221, 0, 0));
-                } else if (free < 15) {
-                    carParkShape.setFillColor(Color.argb(153, 255, 112, 56));
-                    carParkShape.setStrokeColor(Color.rgb(255, 112, 56));
-                } else {
-                    /* Blue or grey */
-                    float percent = free / capacity;
-                    int red = FULL_RGB - Math.round((FULL_RGB - EMPTY_RED) * percent);
-                    int green = FULL_RGB - Math.round((FULL_RGB - EMPTY_GREEN) * percent);
-                    int blue = FULL_RGB - Math.round((FULL_RGB - EMPTY_BLUE) * percent);
-                    int fillColour = Color.argb(153, red, green, blue);
-                    int strokeColour = Color.rgb(red, green, blue);
-
-                    carParkShape.setFillColor(fillColour);
-                    carParkShape.setStrokeColor(strokeColour);
-                }
-//                carParkHashMap.put(carParkShape.getId(), carPark);
+            if (!type.contains("e-Permit") || capacity < 0) {
+                /* Purple */
+                carParkShape.setFillColor(Color.argb(153, 156, 117, 255));
+                carParkShape.setStrokeColor(Color.rgb(156, 117, 255));
+            } else if (free == 0) {
+                /* Red */
+                carParkShape.setFillColor(Color.argb(153, 211, 0, 0));
+                carParkShape.setStrokeColor(Color.rgb(221, 0, 0));
+            } else if (free < 15) {
+                carParkShape.setFillColor(Color.argb(153, 255, 112, 56));
+                carParkShape.setStrokeColor(Color.rgb(255, 112, 56));
+            } else {
+                /* Blue or grey */
+                float percent = free / capacity;
+                int red = FULL_RGB - Math.round((FULL_RGB - EMPTY_RED) * percent);
+                int green = FULL_RGB - Math.round((FULL_RGB - EMPTY_GREEN) * percent);
+                int blue = FULL_RGB - Math.round((FULL_RGB - EMPTY_BLUE) * percent);
+                int fillColour = Color.argb(153, red, green, blue);
+                int strokeColour = Color.rgb(red, green, blue);
+                carParkShape.setFillColor(fillColour);
+                carParkShape.setStrokeColor(strokeColour);
             }
-
-            GoogleMap.OnPolygonClickListener onPolygonClickListener = new GoogleMap.OnPolygonClickListener() {
-                @Override
-                public void onPolygonClick(Polygon polygon) {
-                    String carParkKey = String.valueOf(polygon.getTag());
-                    CarPark carPark = carParks.get(carParkKey);
+        }
+        GoogleMap.OnPolygonClickListener onPolygonClickListener = new GoogleMap.OnPolygonClickListener() {
+            @Override
+            public void onPolygonClick(Polygon polygon) {
+                String tag = String.valueOf(polygon.getTag());
+                CarPark carPark = carParks.get(tag);
 //                    Intent intent = new Intent(getApplicationContext(), CarParkDetailsActivity.class);
 //                    intent.putExtra("carPark", carPark);
 //                    startActivity(intent);
 //                    Bundle args = new Bundle();
 //                    args.putParcelable("carPark", carPark);
 //                    carParkDetailsFragment.setArguments(args);
-                    FragmentManager fragmentManager = getSupportFragmentManager();
-                    FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-                    Fragment carParkDetailsFragment = CarParkDetailsFragment.newInstance(carPark);
-                    fragmentTransaction.replace(R.id.fragmentContainer, carParkDetailsFragment,
-                            CARPARKDETAILS_FRAGMENT_TAG);
-                    fragmentTransaction.addToBackStack(CARPARKDETAILS_FRAGMENT_TAG);
-                    fragmentTransaction.commit();
-                }
-            };
-            mMap.setOnPolygonClickListener(onPolygonClickListener);
-        }
+                FragmentManager fragmentManager = getSupportFragmentManager();
+                FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+                Fragment carParkDetailsFragment = CarParkDetailsFragment.newInstance(carPark);
+                fragmentTransaction.replace(R.id.fragmentContainer, carParkDetailsFragment, CARPARKDETAILS_FRAGMENT_TAG);
+                fragmentTransaction.addToBackStack(null);
+                fragmentTransaction.commit();
+            }
+        };
+        mMap.setOnPolygonClickListener(onPolygonClickListener);
     }
 
-    private LinkedHashMap<String, CarPark> getCarParkXmlFromNetwork(String urlString) throws
-            XmlPullParserException,
-            IOException {
+    private LinkedHashMap<String, CarPark> getCarParkXmlFromNetwork(String urlString) throws XmlPullParserException, IOException {
         InputStream stream = null;
         ParkingXMLParser parkingXMLParser = new ParkingXMLParser();
         LinkedHashMap<String, CarPark> carParks;

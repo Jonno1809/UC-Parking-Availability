@@ -55,8 +55,8 @@ public class ParkingXMLParser {
         return coordinates;
     }
 
-    LinkedHashMap<String, CarPark> parse(InputStream inputStream) throws XmlPullParserException,
-            IOException {
+
+    LinkedHashMap<String, CarPark> parse(InputStream inputStream) throws XmlPullParserException, IOException {
         try {
             XmlPullParser parser = Xml.newPullParser();
             parser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, false);
@@ -69,8 +69,8 @@ public class ParkingXMLParser {
     }
 
     private LinkedHashMap<String, CarPark> readCarParks(XmlPullParser parser) throws
-            XmlPullParserException,
-            IOException {
+            XmlPullParserException, IOException {
+
         LinkedHashMap<String, CarPark> carParks = new LinkedHashMap<>();
 
         parser.require(XmlPullParser.START_TAG, namespace, "parking_availability");

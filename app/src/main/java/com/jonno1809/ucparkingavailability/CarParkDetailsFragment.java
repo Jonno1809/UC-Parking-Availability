@@ -37,12 +37,6 @@ public class CarParkDetailsFragment extends Fragment {
     private String cpType;
     private int cpCapacity;
 
-    private TextView tvName;
-    private TextView tvFree;
-    private TextView tvOccupied;
-    private TextView tvType;
-    private TextView tvCapacity;
-
     private OnCarParkShapeSelectedListener mListener;
 
     public CarParkDetailsFragment() {
@@ -105,11 +99,11 @@ public class CarParkDetailsFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_car_park_details, container, false);
-        tvName = view.findViewById(R.id.tvName);
-        tvFree = view.findViewById(R.id.tvFree);
-        tvOccupied = view.findViewById(R.id.tvOccupied);
-        tvType = view.findViewById(R.id.tvType);
-        tvCapacity = view.findViewById(R.id.tvCapacity);
+        TextView tvName = view.findViewById(R.id.tvName);
+        TextView tvFree = view.findViewById(R.id.tvFree);
+        TextView tvOccupied = view.findViewById(R.id.tvOccupied);
+        TextView tvType = view.findViewById(R.id.tvType);
+        TextView tvCapacity = view.findViewById(R.id.tvCapacity);
 
         tvName.setText(getString(R.string.car_park_name, cpName));
         tvFree.setText(getString(R.string.car_park_free, cpFree));
