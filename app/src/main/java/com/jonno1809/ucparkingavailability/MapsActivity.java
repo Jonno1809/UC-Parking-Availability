@@ -25,7 +25,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.LinkedHashMap;
+import java.util.HashMap;
 
 
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback,
@@ -36,8 +36,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private final String CARPARKDETAILS_FRAGMENT_TAG = "carParkDetailsFragment";
     private final String MAP_FRAGMENT_TAG = "mapFragment";
     private final String CURRENT_FRAGMENT_TAG = "currentFragment";
+    private final String CARPARKS_TAG = "carParks";
 
-    private LinkedHashMap<String, CarPark> carParks = new LinkedHashMap<>();
+    private HashMap<String, CarPark> carParks = new HashMap<>();
 
     private final String UC_URL = "https://www.canberra.edu.au/wsprd/UCMobile/parking.svc/availability";
 
@@ -50,6 +51,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         if (savedInstanceState != null) {
             Fragment currentFragment = fragmentManager.getFragment(savedInstanceState, CURRENT_FRAGMENT_TAG);
+
+            carParks = (HashMap<String, CarPark>) savedInstanceState.getSerializable(CARPARKS_TAG);
 
             fragmentManager.beginTransaction().replace(R.id.fragmentContainer, currentFragment)
                     .commit();
@@ -108,10 +111,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     }
 
-    private class DownloadXmlTask extends AsyncTask<String, Void, LinkedHashMap<String, CarPark>> {
+    private class DownloadXmlTask extends AsyncTask<String, Void, HashMap<String, CarPark>> {
 
         @Override
-        protected LinkedHashMap<String, CarPark> doInBackground(String... urls) {
+        protected HashMap<String, CarPark> doInBackground(String... urls) {
             try {
                 return getCarParkXmlFromNetwork(urls[0]);
             } catch (XmlPullParserException | IOException e) {
@@ -121,13 +124,13 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
 
         @Override
-        protected void onPostExecute(LinkedHashMap<String, CarPark> result) {
-            carParks.putAll(result);
+        protected void onPostExecute(HashMap<String, CarPark> result) {
+            carParks = result;
             addCarParkShapesToMap(carParks);
         }
     }
 
-    private void addCarParkShapesToMap(final LinkedHashMap<String, CarPark> carParks) {
+    private void addCarParkShapesToMap(final HashMap<String, CarPark> carParks) {
         // For calculating colour percentages
         final int EMPTY_RED = 0;
         final int EMPTY_GREEN = 158;
@@ -189,10 +192,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         mMap.setOnPolygonClickListener(onPolygonClickListener);
     }
 
-    private LinkedHashMap<String, CarPark> getCarParkXmlFromNetwork(String urlString) throws XmlPullParserException, IOException {
+    private HashMap<String, CarPark> getCarParkXmlFromNetwork(String urlString) throws XmlPullParserException, IOException {
         InputStream stream = null;
         ParkingXMLParser parkingXMLParser = new ParkingXMLParser();
-        LinkedHashMap<String, CarPark> carParks;
+        HashMap<String, CarPark> carParks;
 
         try {
             stream = downloadUrl(urlString);
@@ -260,6 +263,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
         Fragment fragment = fragmentManager.findFragmentByTag(tag);
         fragmentManager.putFragment(outState, CURRENT_FRAGMENT_TAG, fragment);
+        outState.putSerializable(CARPARKS_TAG, carParks);
         super.onSaveInstanceState(outState);
     }
 }
