@@ -11,6 +11,7 @@ import org.xmlpull.v1.XmlPullParserException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -54,7 +55,7 @@ public class ParkingXMLParser {
         return coordinates;
     }
 
-    HashMap<String, CarPark> parse(InputStream inputStream) throws XmlPullParserException,
+    LinkedHashMap<String, CarPark> parse(InputStream inputStream) throws XmlPullParserException,
             IOException {
         try {
             XmlPullParser parser = Xml.newPullParser();
@@ -67,10 +68,10 @@ public class ParkingXMLParser {
         }
     }
 
-    private HashMap<String, CarPark> readCarParks(XmlPullParser parser) throws
+    private LinkedHashMap<String, CarPark> readCarParks(XmlPullParser parser) throws
             XmlPullParserException,
             IOException {
-        HashMap<String, CarPark> carParks = new HashMap<>();
+        LinkedHashMap<String, CarPark> carParks = new LinkedHashMap<>();
 
         parser.require(XmlPullParser.START_TAG, namespace, "parking_availability");
         while (parser.next() != XmlPullParser.END_TAG) {

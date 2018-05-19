@@ -25,8 +25,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.LinkedHashMap;
 import java.util.Set;
 
 
@@ -81,10 +80,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     }
 
-    private class DownloadXmlTask extends AsyncTask<String, Void, HashMap<String, CarPark>> {
+    private class DownloadXmlTask extends AsyncTask<String, Void, LinkedHashMap<String, CarPark>> {
 
         @Override
-        protected HashMap<String, CarPark> doInBackground(String... urls) {
+        protected LinkedHashMap<String, CarPark> doInBackground(String... urls) {
             try {
                 return getCarParkXmlFromNetwork(urls[0]);
             } catch (XmlPullParserException | IOException e) {
@@ -94,21 +93,21 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
 
         @Override
-        protected void onPostExecute(HashMap<String, CarPark> result) {
+        protected void onPostExecute(LinkedHashMap<String, CarPark> result) {
             // For calculating colour percentages
             final int EMPTY_RED = 0;
             final int EMPTY_GREEN = 158;
             final int EMPTY_BLUE = 221;
             final int FULL_RGB = 180;
 
-            final HashMap<String, CarPark> carParks = result;
-            Set<Map.Entry<String, CarPark>> carParksEntries = result.entrySet();
+            final LinkedHashMap<String, CarPark> carParks = result;
+            Set<String> carParkKeys = result.keySet();
             // Could be improved by changing car park list to hashmap or something
-//            Iterator<CarPark> carParkIterator = result.iterator();
+//            Iterator<CarPark> carParkIterator = result.
 //            final HashMap<String, CarPark> carParkHashMap = result;
 
-            for (Map.Entry<String, CarPark> carParkMapEntry : carParksEntries) {
-                CarPark carPark = carParkMapEntry.getValue();
+            for (String carParkKey : carParkKeys) {
+                CarPark carPark = carParks.get(carParkKey);
                 String type = carPark.getType();
                 float free = carPark.getFree();
                 float capacity = carPark.getCapacity();
@@ -147,7 +146,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             GoogleMap.OnPolygonClickListener onPolygonClickListener = new GoogleMap.OnPolygonClickListener() {
                 @Override
                 public void onPolygonClick(Polygon polygon) {
-                    String carParkKey = (String) polygon.getTag();
+                    String carParkKey = String.valueOf(polygon.getTag());
                     CarPark carPark = carParks.get(carParkKey);
 //                    Intent intent = new Intent(getApplicationContext(), CarParkDetailsActivity.class);
 //                    intent.putExtra("carPark", carPark);
@@ -167,12 +166,12 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
     }
 
-    private HashMap<String, CarPark> getCarParkXmlFromNetwork(String urlString) throws
+    private LinkedHashMap<String, CarPark> getCarParkXmlFromNetwork(String urlString) throws
             XmlPullParserException,
             IOException {
         InputStream stream = null;
         ParkingXMLParser parkingXMLParser = new ParkingXMLParser();
-        HashMap<String, CarPark> carParks;
+        LinkedHashMap<String, CarPark> carParks;
 
         try {
             stream = downloadUrl(urlString);
