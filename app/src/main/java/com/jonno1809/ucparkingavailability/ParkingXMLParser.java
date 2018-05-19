@@ -10,9 +10,8 @@ import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -56,7 +55,8 @@ public class ParkingXMLParser {
         return coordinates;
     }
 
-    List<CarPark> parse(InputStream inputStream) throws XmlPullParserException, IOException {
+    LinkedHashMap<String, CarPark> parse(InputStream inputStream) throws XmlPullParserException,
+            IOException {
         try {
             XmlPullParser parser = Xml.newPullParser();
             parser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, false);
@@ -68,8 +68,10 @@ public class ParkingXMLParser {
         }
     }
 
-    private List<CarPark> readCarParks(XmlPullParser parser) throws XmlPullParserException, IOException {
-        List<CarPark> car_parks = new ArrayList<CarPark>();
+    private LinkedHashMap<String, CarPark> readCarParks(XmlPullParser parser) throws
+            XmlPullParserException,
+            IOException {
+        LinkedHashMap<String, CarPark> carParks = new LinkedHashMap<>();
 
         parser.require(XmlPullParser.START_TAG, namespace, "parking_availability");
         while (parser.next() != XmlPullParser.END_TAG) {
@@ -81,7 +83,8 @@ public class ParkingXMLParser {
             if (name.equals("car_parks")) {
                 parser.require(XmlPullParser.START_TAG, namespace, "car_parks");
                 while (parser.next() != XmlPullParser.END_TAG) {
-                    car_parks.add(readCarPark(parser));
+                    CarPark carPark = readCarPark(parser);
+                    carParks.put(carPark.getName(), carPark);
                 }
             }
             else {
@@ -89,7 +92,7 @@ public class ParkingXMLParser {
             }
         }
 
-        return car_parks;
+        return carParks;
     }
 
 

@@ -4,7 +4,6 @@ import android.content.Context;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
@@ -68,22 +67,30 @@ public class CarParkDetailsFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            carPark = getArguments().getParcelable(CARPARK_KEY);
-        }
-
-        if (carPark != null) {
-            cpName = carPark.getName();
-            cpFree = carPark.getFree();
-            cpOccupied = carPark.getOccupied();
-            cpType = carPark.getType();
-            cpCapacity = carPark.getCapacity();
+        if (savedInstanceState != null) {
+            cpName = savedInstanceState.getString(NAME_KEY);
+            cpFree = savedInstanceState.getInt(FREE_KEY);
+            cpCapacity = savedInstanceState.getInt(CAPACITY_KEY);
+            cpOccupied = savedInstanceState.getInt(OCCUPIED_KEY);
+            cpType = savedInstanceState.getString(TYPE_KEY);
         } else {
-            cpName = "N/A";
-            cpFree = 0;
-            cpOccupied = 0;
-            cpType = "N/A";
-            cpCapacity = 0;
+            if (getArguments() != null) {
+                carPark = getArguments().getParcelable(CARPARK_KEY);
+            }
+
+            if (carPark != null) {
+                cpName = carPark.getName();
+                cpFree = carPark.getFree();
+                cpOccupied = carPark.getOccupied();
+                cpType = carPark.getType();
+                cpCapacity = carPark.getCapacity();
+            } else {
+                cpName = "N/A";
+                cpFree = 0;
+                cpOccupied = 0;
+                cpType = "N/A";
+                cpCapacity = 0;
+            }
         }
 
         ActionBar actionBar = ((AppCompatActivity)getActivity()).getSupportActionBar();
@@ -155,8 +162,8 @@ public class CarParkDetailsFragment extends Fragment {
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
-        View view = getView();
-        if (view != null) {
+//        View view = getView();
+//        if (view != null) {
 //            TextView tvName = view.findViewById(R.id.tvName);
 //            TextView tvFree = view.findViewById(R.id.tvFree);
 //            TextView tvOccupied = view.findViewById(R.id.tvOccupied);
@@ -175,12 +182,12 @@ public class CarParkDetailsFragment extends Fragment {
 //              savedInstanceState.putString('"' + string + '"', string);
 //          }
 
-            outState.putString(NAME_KEY, cpName);
-            outState.putInt(FREE_KEY, cpFree);
-            outState.putInt(OCCUPIED_KEY, cpOccupied);
-            outState.putString(TYPE_KEY, cpType);
-            outState.putInt(CAPACITY_KEY, cpCapacity);
-        }
+//        }
+        outState.putString(NAME_KEY, cpName);
+        outState.putInt(FREE_KEY, cpFree);
+        outState.putInt(OCCUPIED_KEY, cpOccupied);
+        outState.putString(TYPE_KEY, cpType);
+        outState.putInt(CAPACITY_KEY, cpCapacity);
 
         super.onSaveInstanceState(outState);
     }
@@ -199,16 +206,16 @@ public class CarParkDetailsFragment extends Fragment {
 //    }
 
 
-    @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-        if (savedInstanceState != null) {
-            cpName = savedInstanceState.getString(NAME_KEY);
-            cpFree = savedInstanceState.getInt(FREE_KEY);
-            cpOccupied = savedInstanceState.getInt(OCCUPIED_KEY);
-            cpType = savedInstanceState.getString(TYPE_KEY);
-            cpCapacity = savedInstanceState.getInt(CAPACITY_KEY);
-        }
-
-    }
+//    @Override
+//    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+//        super.onActivityCreated(savedInstanceState);
+//        if (savedInstanceState != null) {
+//            cpName = savedInstanceState.getString(NAME_KEY);
+//            cpFree = savedInstanceState.getInt(FREE_KEY);
+//            cpOccupied = savedInstanceState.getInt(OCCUPIED_KEY);
+//            cpType = savedInstanceState.getString(TYPE_KEY);
+//            cpCapacity = savedInstanceState.getInt(CAPACITY_KEY);
+//        }
+//
+//    }
 }
