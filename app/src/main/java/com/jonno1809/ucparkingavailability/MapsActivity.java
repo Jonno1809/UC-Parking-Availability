@@ -31,10 +31,11 @@ import java.util.Set;
 
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback,
         CarParkDetailsFragment
-        .OnCarParkShapeSelectedListener {
+                .OnCarParkShapeSelectedListener {
 
     private GoogleMap mMap;
     private final String CARPARKDETAILS_FRAGMENT_TAG = "carParkDetailsFragment";
+    private final String MAP_FRAGMENT_TAG = "mapFragment";
 
     private final String UC_URL = "https://www.canberra.edu.au/wsprd/UCMobile/parking.svc/availability";
 
@@ -43,12 +44,25 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
 
-        if (savedInstanceState == null) {
-        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
-            SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
-                    .findFragmentById(R.id.map);
-            mapFragment.getMapAsync(this);
+        FragmentManager fragmentManager = getSupportFragmentManager();
+
+        if (savedInstanceState != null) {
+            Fragment carParkDetailsFragment = fragmentManager.getFragment
+                    (savedInstanceState, CARPARKDETAILS_FRAGMENT_TAG);
+            fragmentManager.beginTransaction().replace(R.id.fragmentContainer, carParkDetailsFragment)
+                    .commit();
+        } else {
+            // Obtain the SupportMapFragment and get notified when the map is ready to be used.
+            SupportMapFragment mapFragment = (SupportMapFragment) fragmentManager
+                    .findFragmentById(R.id.fragmentContainer);
+            if (mapFragment == null) {
+                mapFragment = SupportMapFragment.newInstance();
+                mapFragment.getMapAsync(this);
+                fragmentManager.beginTransaction().replace(R.id.fragmentContainer, mapFragment)
+                        .commit();
+            }
         }
+
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
             actionBar.show();
@@ -75,7 +89,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         mMap.getUiSettings().setZoomControlsEnabled(true);
         DownloadXmlTask downloadXmlTask = new DownloadXmlTask();
         downloadXmlTask.execute(UC_URL);
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(ucLatLng,15));
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(ucLatLng, 15));
 
     }
 
@@ -161,7 +175,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     FragmentManager fragmentManager = getSupportFragmentManager();
                     FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
                     Fragment carParkDetailsFragment = CarParkDetailsFragment.newInstance(carPark);
-                    fragmentTransaction.replace(R.id.map, carParkDetailsFragment);
+                    fragmentTransaction.replace(R.id.fragmentContainer, carParkDetailsFragment,
+                            CARPARKDETAILS_FRAGMENT_TAG);
                     fragmentTransaction.addToBackStack(CARPARKDETAILS_FRAGMENT_TAG);
                     fragmentTransaction.commit();
                 }
@@ -230,5 +245,13 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             actionBar.setDisplayHomeAsUpEnabled(isDisplayed);
             actionBar.setDisplayShowHomeEnabled(isDisplayed);
         }
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        Fragment fragment = fragmentManager.findFragmentByTag(CARPARKDETAILS_FRAGMENT_TAG);
+        fragmentManager.putFragment(outState, CARPARKDETAILS_FRAGMENT_TAG, fragment);
+        super.onSaveInstanceState(outState);
     }
 }
