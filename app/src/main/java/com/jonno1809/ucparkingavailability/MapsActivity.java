@@ -36,6 +36,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private GoogleMap mMap;
     private final String CARPARKDETAILS_FRAGMENT_TAG = "carParkDetailsFragment";
     private final String MAP_FRAGMENT_TAG = "mapFragment";
+    private final String CURRENT_FRAGMENT_TAG = "currentFragment";
 
     private final String UC_URL = "https://www.canberra.edu.au/wsprd/UCMobile/parking.svc/availability";
 
@@ -47,9 +48,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         FragmentManager fragmentManager = getSupportFragmentManager();
 
         if (savedInstanceState != null) {
-            Fragment carParkDetailsFragment = fragmentManager.getFragment
-                    (savedInstanceState, CARPARKDETAILS_FRAGMENT_TAG);
-            fragmentManager.beginTransaction().replace(R.id.fragmentContainer, carParkDetailsFragment)
+            Fragment currentFragment = fragmentManager.getFragment
+                    (savedInstanceState, CURRENT_FRAGMENT_TAG);
+            fragmentManager.beginTransaction().replace(R.id.fragmentContainer,
+                    currentFragment)
                     .commit();
         } else {
             // Obtain the SupportMapFragment and get notified when the map is ready to be used.
@@ -58,7 +60,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             if (mapFragment == null) {
                 mapFragment = SupportMapFragment.newInstance();
                 mapFragment.getMapAsync(this);
-                fragmentManager.beginTransaction().replace(R.id.fragmentContainer, mapFragment)
+                fragmentManager.beginTransaction().replace(R.id.fragmentContainer, mapFragment,
+                        MAP_FRAGMENT_TAG)
                         .commit();
             }
         }
@@ -250,8 +253,14 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     public void onSaveInstanceState(Bundle outState) {
         FragmentManager fragmentManager = getSupportFragmentManager();
-        Fragment fragment = fragmentManager.findFragmentByTag(CARPARKDETAILS_FRAGMENT_TAG);
-        fragmentManager.putFragment(outState, CARPARKDETAILS_FRAGMENT_TAG, fragment);
+        String tag;
+        if (fragmentManager.getBackStackEntryCount() == 0) {
+            tag = MAP_FRAGMENT_TAG;
+        } else {
+            tag = CARPARKDETAILS_FRAGMENT_TAG;
+        }
+        Fragment fragment = fragmentManager.findFragmentByTag(tag);
+        fragmentManager.putFragment(outState, CURRENT_FRAGMENT_TAG, fragment);
         super.onSaveInstanceState(outState);
     }
 }
