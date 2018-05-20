@@ -48,6 +48,18 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         setContentView(R.layout.activity_maps);
 
         FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentManager.OnBackStackChangedListener listener = new FragmentManager
+                .OnBackStackChangedListener() {
+            @Override
+            public void onBackStackChanged() {
+                if (getSupportFragmentManager().getBackStackEntryCount() == 0) {
+                    displayActionBarUpArrow(false);
+                } else {
+                    displayActionBarUpArrow(true);
+                }
+            }
+        };
+        fragmentManager.addOnBackStackChangedListener(listener);
 
         if (savedInstanceState != null) {
             Fragment currentFragment = fragmentManager.getFragment(savedInstanceState, CURRENT_FRAGMENT_TAG);
@@ -234,12 +246,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     public void onBackPressed() {
         FragmentManager fragmentManager = getSupportFragmentManager();
         if (fragmentManager.getBackStackEntryCount() > 0) {
-            fragmentManager.popBackStackImmediate();
-            if (fragmentManager.getBackStackEntryCount() == 0) {
-                displayActionBarUpArrow(false);
-            }
+            fragmentManager.popBackStack();
         } else {
-            displayActionBarUpArrow(false);
             super.onBackPressed();
         }
     }
