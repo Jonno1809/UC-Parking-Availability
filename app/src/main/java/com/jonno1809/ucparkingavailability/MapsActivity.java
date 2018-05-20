@@ -47,13 +47,18 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
 
+        // TODO: Clean everything up a little
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentManager.OnBackStackChangedListener listener = new FragmentManager
                 .OnBackStackChangedListener() {
             @Override
             public void onBackStackChanged() {
-                if (getSupportFragmentManager().getBackStackEntryCount() == 0) {
+                FragmentManager fm = getSupportFragmentManager();
+                if (fm.getBackStackEntryCount() == 0) {
                     displayActionBarUpArrow(false);
+                    SupportMapFragment mapFragment = (SupportMapFragment) fm
+                            .findFragmentById(R.id.fragmentContainer);
+                    mapFragment.getMapAsync(MapsActivity.this);
                 } else {
                     displayActionBarUpArrow(true);
                 }
@@ -72,7 +77,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 ((SupportMapFragment)currentFragment).getMapAsync(this);
             }
         } else {
-            // Obtain the SupportMapFragment and get notified when the map is ready to be used.
             SupportMapFragment mapFragment = (SupportMapFragment) fragmentManager
                     .findFragmentById(R.id.fragmentContainer);
             if (mapFragment == null) {
@@ -102,20 +106,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
      */
     @Override
     public void onMapReady(GoogleMap googleMap) {
-        mMap = googleMap;
-
-        // Add a marker in Sydney and move the camera
-        LatLng ucLatLng = new LatLng(-35.237894, 149.084055);
-        mMap.addMarker(new MarkerOptions().position(ucLatLng).title("University of Canberra"));
-        mMap.getUiSettings().setZoomControlsEnabled(true);
-        if (carParks.isEmpty()) {
-            DownloadXmlTask downloadXmlTask = new DownloadXmlTask();
-            downloadXmlTask.execute(UC_URL);
-        } else {
-            addCarParkShapesToMap(carParks);
-        }
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(ucLatLng, 15));
-
+        createMap(googleMap);
     }
 
     @Override
@@ -202,6 +193,22 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
         };
         mMap.setOnPolygonClickListener(onPolygonClickListener);
+    }
+
+    private void createMap(GoogleMap map) {
+        mMap = map;
+
+        // Add a marker in Sydney and move the camera
+        LatLng ucLatLng = new LatLng(-35.237894, 149.084055);
+        mMap.addMarker(new MarkerOptions().position(ucLatLng).title("University of Canberra"));
+        mMap.getUiSettings().setZoomControlsEnabled(true);
+        if (carParks.isEmpty()) {
+            DownloadXmlTask downloadXmlTask = new DownloadXmlTask();
+            downloadXmlTask.execute(UC_URL);
+        } else {
+            addCarParkShapesToMap(carParks);
+        }
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(ucLatLng, 15));
     }
 
     private HashMap<String, CarPark> getCarParkXmlFromNetwork(String urlString) throws XmlPullParserException, IOException {
