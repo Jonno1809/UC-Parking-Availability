@@ -40,8 +40,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private HashMap<String, CarPark> carParks = new HashMap<>();
 
-    private final String UC_URL = "https://www.canberra.edu.au/wsprd/UCMobile/parking.svc/availability";
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -49,43 +47,20 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         // TODO: Clean everything up a little
         FragmentManager fragmentManager = getSupportFragmentManager();
-        FragmentManager.OnBackStackChangedListener listener = new FragmentManager
-                .OnBackStackChangedListener() {
-            @Override
-            public void onBackStackChanged() {
-                FragmentManager fm = getSupportFragmentManager();
-                if (fm.getBackStackEntryCount() == 0) {
-                    displayActionBarUpArrow(false);
-                    SupportMapFragment mapFragment = (SupportMapFragment) fm
-                            .findFragmentById(R.id.fragmentContainer);
-                    mapFragment.getMapAsync(MapsActivity.this);
-                } else {
-                    displayActionBarUpArrow(true);
-                }
-            }
-        };
-        fragmentManager.addOnBackStackChangedListener(listener);
+        addBackStackChangedListener(fragmentManager);
 
         if (savedInstanceState != null) {
             Fragment currentFragment = fragmentManager.getFragment(savedInstanceState, CURRENT_FRAGMENT_TAG);
-
             carParks = (HashMap<String, CarPark>) savedInstanceState.getSerializable(CARPARKS_TAG);
-
             fragmentManager.beginTransaction().replace(R.id.fragmentContainer, currentFragment)
                     .commit();
-            if (currentFragment.getTag().equals(MAP_FRAGMENT_TAG)){
-                ((SupportMapFragment)currentFragment).getMapAsync(this);
+            if (currentFragment.getTag().equals(MAP_FRAGMENT_TAG)) {
+                createMap((SupportMapFragment) currentFragment);
             }
         } else {
             SupportMapFragment mapFragment = (SupportMapFragment) fragmentManager
                     .findFragmentById(R.id.fragmentContainer);
-            if (mapFragment == null) {
-                mapFragment = SupportMapFragment.newInstance();
-                mapFragment.getMapAsync(this);
-                fragmentManager.beginTransaction().replace(R.id.fragmentContainer, mapFragment,
-                        MAP_FRAGMENT_TAG)
-                        .commit();
-            }
+            createMap(mapFragment);
         }
 
         ActionBar actionBar = getSupportActionBar();
@@ -94,24 +69,45 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
     }
 
-
-    /**
-     * Manipulates the map once available.
-     * This callback is triggered when the map is ready to be used.
-     * This is where we can add markers or lines, add listeners or move the camera. In this case,
-     * we just add a marker near Sydney, Australia.
-     * If Google Play services is not installed on the device, the user will be prompted to install
-     * it inside the SupportMapFragment. This method will only be triggered once the user has
-     * installed Google Play services and returned to the app.
-     */
     @Override
     public void onMapReady(GoogleMap googleMap) {
-        createMap(googleMap);
+        mMap = googleMap;
+
+        // Add a marker in Sydney and move the camera
+        LatLng ucLatLng = new LatLng(-35.237894, 149.084055);
+        mMap.addMarker(new MarkerOptions().position(ucLatLng).title("University of Canberra"));
+        mMap.getUiSettings().setZoomControlsEnabled(true);
+        if (carParks.isEmpty()) {
+            DownloadXmlTask downloadXmlTask = new DownloadXmlTask();
+            String UC_URL = "https://www.canberra.edu.au/wsprd/UCMobile/parking.svc/availability";
+            downloadXmlTask.execute(UC_URL);
+        } else {
+            addCarParkShapesToMap(carParks);
+        }
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(ucLatLng, 15));
     }
 
     @Override
     public void onCarParkShapeSelected(Uri uri) {
 
+    }
+
+    private void addBackStackChangedListener(final FragmentManager fragmentManager) {
+        FragmentManager.OnBackStackChangedListener listener = new FragmentManager
+                .OnBackStackChangedListener() {
+            @Override
+            public void onBackStackChanged() {
+                if (fragmentManager.getBackStackEntryCount() == 0) {
+                    displayActionBarUpArrow(false);
+                    SupportMapFragment mapFragment = (SupportMapFragment) fragmentManager
+                            .findFragmentById(R.id.fragmentContainer);
+                    createMap(mapFragment);
+                } else {
+                    displayActionBarUpArrow(true);
+                }
+            }
+        };
+        fragmentManager.addOnBackStackChangedListener(listener);
     }
 
     private class DownloadXmlTask extends AsyncTask<String, Void, HashMap<String, CarPark>> {
@@ -159,6 +155,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 carParkShape.setFillColor(Color.argb(153, 211, 0, 0));
                 carParkShape.setStrokeColor(Color.rgb(221, 0, 0));
             } else if (free < 15) {
+                /* Orange */
                 carParkShape.setFillColor(Color.argb(153, 255, 112, 56));
                 carParkShape.setStrokeColor(Color.rgb(255, 112, 56));
             } else {
@@ -178,12 +175,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             public void onPolygonClick(Polygon polygon) {
                 String tag = String.valueOf(polygon.getTag());
                 CarPark carPark = carParks.get(tag);
-//                    Intent intent = new Intent(getApplicationContext(), CarParkDetailsActivity.class);
-//                    intent.putExtra("carPark", carPark);
-//                    startActivity(intent);
-//                    Bundle args = new Bundle();
-//                    args.putParcelable("carPark", carPark);
-//                    carParkDetailsFragment.setArguments(args);
                 FragmentManager fragmentManager = getSupportFragmentManager();
                 FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
                 Fragment carParkDetailsFragment = CarParkDetailsFragment.newInstance(carPark);
@@ -195,20 +186,14 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         mMap.setOnPolygonClickListener(onPolygonClickListener);
     }
 
-    private void createMap(GoogleMap map) {
-        mMap = map;
-
-        // Add a marker in Sydney and move the camera
-        LatLng ucLatLng = new LatLng(-35.237894, 149.084055);
-        mMap.addMarker(new MarkerOptions().position(ucLatLng).title("University of Canberra"));
-        mMap.getUiSettings().setZoomControlsEnabled(true);
-        if (carParks.isEmpty()) {
-            DownloadXmlTask downloadXmlTask = new DownloadXmlTask();
-            downloadXmlTask.execute(UC_URL);
-        } else {
-            addCarParkShapesToMap(carParks);
+    private void createMap(SupportMapFragment mapFragment) {
+        if (mapFragment == null) {
+            mapFragment = SupportMapFragment.newInstance();
         }
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(ucLatLng, 15));
+        mapFragment.getMapAsync(this);
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.fragmentContainer, mapFragment, MAP_FRAGMENT_TAG)
+                .commit();
     }
 
     private HashMap<String, CarPark> getCarParkXmlFromNetwork(String urlString) throws XmlPullParserException, IOException {
@@ -228,6 +213,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     private InputStream downloadUrl(String urlString) throws IOException {
+
         URL url = new URL(urlString);
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setReadTimeout(10000);
@@ -236,6 +222,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         connection.setDoInput(true);
         connection.connect();
         return connection.getInputStream();
+
     }
 
     @Override
