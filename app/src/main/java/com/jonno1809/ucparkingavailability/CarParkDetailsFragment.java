@@ -156,27 +156,6 @@ public class CarParkDetailsFragment extends Fragment {
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
-//        View view = getView();
-//        if (view != null) {
-//            TextView tvName = view.findViewById(R.id.tvName);
-//            TextView tvFree = view.findViewById(R.id.tvFree);
-//            TextView tvOccupied = view.findViewById(R.id.tvOccupied);
-//            TextView tvType = view.findViewById(R.id.tvType);
-//            TextView tvCapacity = view.findViewById(R.id.tvCapacity);
-//
-//            String name = tvName.getText().toString();
-//            String free = tvFree.getText().toString();
-//            String occupied = tvOccupied.getText().toString();
-//            String type = tvType.getText().toString();
-//            String capacity = tvCapacity.getText().toString();
-//
-//            String[] cpDetails = {name, free, occupied, type, capacity};
-////            savedInstanceState.putStringArray("cpDetails", cpDetails);
-//          for (String string : cpDetails) {
-//              savedInstanceState.putString('"' + string + '"', string);
-//          }
-
-//        }
         outState.putString(NAME_KEY, cpName);
         outState.putInt(FREE_KEY, cpFree);
         outState.putInt(OCCUPIED_KEY, cpOccupied);
@@ -185,31 +164,4 @@ public class CarParkDetailsFragment extends Fragment {
 
         super.onSaveInstanceState(outState);
     }
-
-//    @Override
-//    public void onViewStateRestored(@Nullable Bundle savedInstanceState) {
-//        super.onViewStateRestored(savedInstanceState);
-//
-//        if (savedInstanceState != null) {
-//            cpName = savedInstanceState.getString(NAME_KEY);
-//            cpFree = savedInstanceState.getInt(FREE_KEY);
-//            cpOccupied = savedInstanceState.getInt(OCCUPIED_KEY);
-//            cpType = savedInstanceState.getString(TYPE_KEY);
-//            cpCapacity = savedInstanceState.getInt(CAPACITY_KEY);
-//        }
-//    }
-
-
-//    @Override
-//    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-//        super.onActivityCreated(savedInstanceState);
-//        if (savedInstanceState != null) {
-//            cpName = savedInstanceState.getString(NAME_KEY);
-//            cpFree = savedInstanceState.getInt(FREE_KEY);
-//            cpOccupied = savedInstanceState.getInt(OCCUPIED_KEY);
-//            cpType = savedInstanceState.getString(TYPE_KEY);
-//            cpCapacity = savedInstanceState.getInt(CAPACITY_KEY);
-//        }
-//
-//    }
 }
