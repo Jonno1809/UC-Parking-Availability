@@ -6,6 +6,8 @@ import android.os.Parcelable;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.PolygonOptions;
 
+import java.util.List;
+
 /**
  * Created by Jonno on 22/02/2018.
  * With help from http://en.proft.me/2017/02/28/pass-object-between-activities-android-parcelable/
@@ -22,7 +24,7 @@ public class CarPark implements Parcelable {
     private final PolygonOptions carParkEdges;
 
     CarPark(String name, int capacity, int free, int occupied,
-                   String type, LatLng coords, PolygonOptions carParkEdges) {
+            String type, LatLng coords, PolygonOptions carParkEdges) {
         this.name = name;
         this.capacity = capacity;
         this.free = free;
@@ -87,6 +89,32 @@ public class CarPark implements Parcelable {
             return new CarPark[size];
         }
     };
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (!(this.getClass() == obj.getClass())) {
+            return false;
+        }
+
+        CarPark carPark = (CarPark) obj;
+        List<LatLng> carParkEdges = carPark.getCarParkEdges().getPoints();
+        List<LatLng> thisCarParkEdges = this.getCarParkEdges().getPoints();
+
+        return carPark.getName().equals(name) &&
+                carPark.getType().equals(type) &&
+                carPark.getOccupied() == occupied &&
+                carPark.getFree() == free &&
+                carPark.capacity == capacity &&
+                carPark.getCoords().equals(coords) &&
+                carParkEdges.size() == thisCarParkEdges.size() &&
+                carParkEdges.containsAll(thisCarParkEdges);
+    }
 
     @Override
     public void writeToParcel(Parcel parcel, int flags) {
