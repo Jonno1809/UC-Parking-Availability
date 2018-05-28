@@ -1,7 +1,6 @@
+# See ://medium.com/@distillerytech/painless-travis-ci-cd-for-android-project-8c5bce253c4b
 language: android
-
 jdk: oraclejdk8
-
 env:
  global:
  - ANDROID_API=27
@@ -11,27 +10,40 @@ env:
 
 android:
   components:
-   - tools
-   - platform-tools
-   - build-tools-$ANDROID_BUILD_TOOLS
-   - android-$ANDROID_API
-   - android-$EMULATOR_API_LEVEL
-   - extra-google-m2repository
-   - extra-android-m2repository # for design library
-   - addon-google_apis-google-19 # google play services
-   - sys-img-armeabi-v7a-addon-google_apis-google-$ANDROID_API_LEVEL
-   - sys-img-armeabi-v7a-addon-google_apis-google-$EMULATOR_API_LEVEL
-   - extra-google-google_play_services
+    - tools
+    - platform-tools
+    # The BuildTools version used by your project
+    - build-tools-$ANDROID_BUILD_TOOLS_VERSION
+    # The SDK version used to compile your project
+    - android-$ANDROID_API_LEVEL
+    # Additional components
+    - extra-google-google_play_services
+    - extra-google-m2repository
+    - extra-android-m2repository
+    - addon-google_apis-google-$ANDROID_API_LEVEL
+    - sys-img-armeabi-v7a-google_apis-27
+
+  licenses:
+    - 'android-sdk-preview-license-.+'
+    - 'android-sdk-license-.+'
+    - 'google-gdk-license-.+'
+
+before_script:
+# Launch emulator before the execution
+    - echo no | android create avd --force -n test -t android-27 --abi google_apis/armeabi-v7a
+    - emulator -avd test -no-audio -no-window &
+    - android-wait-for-emulator
+    - adb shell input keyevent 82 &
 
 # Emulator Management: Create, Start and Wait
-before_script:
-  - echo no | android create avd --force -n test -t android-27 --abi armeabi-v7a
-  - emulator -avd test -no-audio -no-window &
-  - android-wait-for-emulator
-  - adb shell input keyevent 82 &
+#before_script:
+#  - echo no | android create avd --force -n test -t android-27 --abi armeabi-v7a
+#  - emulator -avd test -no-audio -no-window &
+#  - android-wait-for-emulator
+#  - adb shell input keyevent 82 &
 
 script:
-   - ./gradlew clean test connectedAndroidTest build
+   - ./gradlew build check
 
 before_install:
  - chmod +x gradlew
