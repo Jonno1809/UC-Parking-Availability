@@ -29,7 +29,7 @@ android:
     - 'android-sdk-license-.+'
     - 'google-gdk-license-.+'
 
-#before_script:
+before_script:
 ## Launch emulator before the execution
     - android list targets
     - echo no | android create avd --force -n test -t android-22 --abi google_apis/armeabi-v7a
