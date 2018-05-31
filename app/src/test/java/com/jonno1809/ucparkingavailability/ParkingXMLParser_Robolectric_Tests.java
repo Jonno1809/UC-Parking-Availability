@@ -3,11 +3,9 @@ package com.jonno1809.ucparkingavailability;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.PolygonOptions;
 
-import junit.framework.Assert;
-
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 import org.xmlpull.v1.XmlPullParserException;
 
@@ -29,6 +27,8 @@ public class ParkingXMLParser_Robolectric_Tests {
             InputStream inputStream = getClass().getClassLoader().getResourceAsStream("CarParksXML_Test.xml");
             HashMap<String, CarPark> result = parkingXMLParser.parse(inputStream);
             Assert.assertEquals(result, carParks);
+            carParks.remove("K1");
+            Assert.assertNotEquals(result, carParks);
         } catch (XmlPullParserException | IOException e) {
             e.printStackTrace();
         }
