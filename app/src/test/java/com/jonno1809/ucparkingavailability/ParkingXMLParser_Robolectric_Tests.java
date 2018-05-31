@@ -1,14 +1,14 @@
 package com.jonno1809.ucparkingavailability;
 
-import android.content.Context;
-import android.support.test.InstrumentationRegistry;
-
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.PolygonOptions;
 
 import junit.framework.Assert;
 
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
+import org.robolectric.RobolectricTestRunner;
 import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.IOException;
@@ -17,48 +17,24 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
-public class ParkingXMLParser_Tests {
-
+@RunWith(RobolectricTestRunner.class)
+public class ParkingXMLParser_Robolectric_Tests {
     private HashMap<String, CarPark> carParks = new HashMap<>();
 
-    private void setUpCarParks() {
+    @Test
+    public void testParse(){
+        setUpCarParks();
         ParkingXMLParser parkingXMLParser = new ParkingXMLParser();
-        Context ctx = InstrumentationRegistry.getContext();
-        String fileName = "CarParksXML_Test.xml";
-//        File testXmlFile = ;
-//        try {
-//            InputStream inputStream = ctx.getAssets().open(fileName);
-//            HashMap<String, CarPark> carParks = parkingXMLParser.parse(inputStream);
-//            int i = 0;
-//            for (String carParkKey : carParks.keySet()) {
-//                CarPark carPark = carParks.get(carParkKey);
-//                String latLng = "new LatLng(" + carPark.getCoords().latitude + "," + carPark.getCoords().longitude + ")";
-//                List<LatLng> edges = carPark.getCarParkEdges().getPoints();
-//                int index = 0;
-////                List<String> temp = new LinkedList<>();
-//                StringBuilder listLog = new StringBuilder("coords = new LinkedList<>();\n");
-//                for (LatLng edge : edges) {
-//                    listLog.append("coords.add(new LatLng(").append(edge.latitude).append(",").append(edge
-//                            .longitude).append("));\n");
-////                    temp.add(listLog.toString());
-//
-//                    index++;
-//                }
-//                Log.i("tag", listLog +
-////                        "CarPark carPark" + i + " = new CarPark" +
-////                        "(\"" + carPark.getName() + "\"," + carPark.getCapacity() +
-////                        "," + carPark.getFree() + "," + carPark.getOccupied() + ",\"" + carPark.getType() + "\"," + latLng +
-////                        ", new PolygonOptions().addAll(coords));\n"+
-//                        "this.carParks.put(\""+carPark.getName()+"\", new CarPark"+"(\"" + carPark.getName() + "\"," + carPark.getCapacity
-//                        () +
-//                        "," + carPark.getFree() + "," + carPark.getOccupied() + ",\"" + carPark.getType() + "\"," + latLng +
-//                        ", new PolygonOptions().addAll(coords)));");
-//                i++;
-//            }
-//        } catch (XmlPullParserException | IOException e) {
-//            e.printStackTrace();
-//        }
+        try {
+            InputStream inputStream = getClass().getClassLoader().getResourceAsStream("CarParksXML_Test.xml");
+            HashMap<String, CarPark> result = parkingXMLParser.parse(inputStream);
+            Assert.assertEquals(result, carParks);
+        } catch (XmlPullParserException | IOException e) {
+            e.printStackTrace();
+        }
+    }
 
+    private void setUpCarParks() {
         List<LatLng> coords = new LinkedList<>();
         coords.add(new LatLng(-35.240344,149.086734));
         coords.add(new LatLng(-35.240344,149.086573));
@@ -367,22 +343,5 @@ public class ParkingXMLParser_Tests {
         coords.add(new LatLng(-35.240386,149.083984));
         coords.add(new LatLng(-35.240198,149.083986));
         this.carParks.put("W1", new CarPark("W1",13,0,0,"Childcare pickup/dropoff",new LatLng(-35.240309,149.083892), new PolygonOptions().addAll(coords)));
-    }
-
-    @Test
-    public void testParse(){
-        setUpCarParks();
-
-        ParkingXMLParser parkingXMLParser = new ParkingXMLParser();
-        Context ctx = InstrumentationRegistry.getContext();
-        String fileName = "CarParksXML_Test.xml";
-
-        try {
-            InputStream inputStream = ctx.getAssets().open(fileName);
-            HashMap<String, CarPark> result = parkingXMLParser.parse(inputStream);
-            Assert.assertEquals(result, carParks);
-        } catch (XmlPullParserException | IOException e) {
-            e.printStackTrace();
-        }
     }
 }
