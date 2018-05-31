@@ -16,10 +16,6 @@ android:
     - 'android-sdk-license-.+'
     - 'google-gdk-license-.+'
 
-before_script:
-  - mkdir -p "$ANDROID_HOME/licenses"
-  - cp ./google-licenses/* "$ANDROID_HOME/licenses/"
-
 script:
   - ./gradlew clean build
 
