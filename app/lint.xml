@@ -1,0 +1,6 @@
+<lint>
+    <issue id="InvalidPackage">
+        <!-- Something wrong with the sentry library so just ignore it -->
+        <ignore path="**/sentry*.jar"/>
+    </issue>
+</lint>
