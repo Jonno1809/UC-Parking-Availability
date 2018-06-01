@@ -7,4 +7,5 @@
     <string name="car_park_occupied">Occupied: %d</string>
     <string name="car_park_type">Type: %s</string>
     <string name="car_park_capactity">Capacity: %d</string>
+    <string name="no_car_parks">No car parks found!</string>
 </resources>
