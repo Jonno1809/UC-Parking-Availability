@@ -1,5 +1,6 @@
 package com.jonno1809.ucparkingavailability;
 
+import android.content.Context;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -27,6 +28,9 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.HashMap;
 
+import io.sentry.Sentry;
+import io.sentry.android.AndroidSentryClientFactory;
+
 
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback,
         CarParkDetailsFragment
@@ -43,30 +47,39 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_maps);
 
-        // TODO: Clean everything up a little
-        FragmentManager fragmentManager = getSupportFragmentManager();
-        addBackStackChangedListener(fragmentManager);
+        Context context = this.getApplicationContext();
+        String sentryDsn = "https://18624adbf94948f8ba771e915691d1da@sentry.io/1217471";
+        Sentry.init(sentryDsn, new AndroidSentryClientFactory(context));
 
-        if (savedInstanceState != null) {
-            Fragment currentFragment = fragmentManager.getFragment(savedInstanceState, CURRENT_FRAGMENT_TAG);
-            carParks = (HashMap<String, CarPark>) savedInstanceState.getSerializable(CARPARKS_TAG);
-            fragmentManager.beginTransaction().replace(R.id.fragmentContainer, currentFragment)
-                    .commit();
-            if (currentFragment.getTag().equals(MAP_FRAGMENT_TAG)) {
-                createMap((SupportMapFragment) currentFragment);
+        try {
+            setContentView(R.layout.activity_maps);
+            // TODO: Clean everything up a little
+            FragmentManager fragmentManager = getSupportFragmentManager();
+            addBackStackChangedListener(fragmentManager);
+
+            if (savedInstanceState != null) {
+                Fragment currentFragment = fragmentManager.getFragment(savedInstanceState, CURRENT_FRAGMENT_TAG);
+                carParks = (HashMap<String, CarPark>) savedInstanceState.getSerializable(CARPARKS_TAG);
+                fragmentManager.beginTransaction().replace(R.id.fragmentContainer, currentFragment)
+                        .commit();
+                if (currentFragment.getTag().equals(MAP_FRAGMENT_TAG)) {
+                    createMap((SupportMapFragment) currentFragment);
+                }
+            } else {
+                SupportMapFragment mapFragment = (SupportMapFragment) fragmentManager
+                        .findFragmentById(R.id.fragmentContainer);
+                createMap(mapFragment);
             }
-        } else {
-            SupportMapFragment mapFragment = (SupportMapFragment) fragmentManager
-                    .findFragmentById(R.id.fragmentContainer);
-            createMap(mapFragment);
+
+            ActionBar actionBar = getSupportActionBar();
+            if (actionBar != null) {
+                actionBar.show();
+            }
+        } catch (Exception e) {
+            Sentry.capture(e);
         }
 
-        ActionBar actionBar = getSupportActionBar();
-        if (actionBar != null) {
-            actionBar.show();
-        }
     }
 
     @Override
