@@ -1,5 +1,6 @@
 package com.jonno1809.ucparkingavailability;
 
+import android.content.Context;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -27,6 +28,10 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.HashMap;
 
+import io.sentry.Sentry;
+import io.sentry.android.AndroidSentryClientFactory;
+import io.sentry.event.BreadcrumbBuilder;
+
 
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback,
         CarParkDetailsFragment
@@ -43,6 +48,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        Context context = this.getApplicationContext();
+        String sentryDsn = "https://18624adbf94948f8ba771e915691d1da@sentry.io/1217471";
+        Sentry.init(sentryDsn, new AndroidSentryClientFactory(context));
+
         setContentView(R.layout.activity_maps);
 
         // TODO: Clean everything up a little
@@ -50,6 +60,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         addBackStackChangedListener(fragmentManager);
 
         if (savedInstanceState != null) {
+            Sentry.getContext().recordBreadcrumb(
+                    new BreadcrumbBuilder().setMessage("Creating activity with savedInstanceState").build()
+            );
             Fragment currentFragment = fragmentManager.getFragment(savedInstanceState, CURRENT_FRAGMENT_TAG);
             carParks = (HashMap<String, CarPark>) savedInstanceState.getSerializable(CARPARKS_TAG);
             fragmentManager.beginTransaction().replace(R.id.fragmentContainer, currentFragment)
@@ -114,10 +127,13 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         @Override
         protected HashMap<String, CarPark> doInBackground(String... urls) {
+            Sentry.getContext().recordBreadcrumb(
+                    new BreadcrumbBuilder().setMessage("Attempt to run DownloadXmlTask").build());
             try {
                 return getCarParkXmlFromNetwork(urls[0]);
-            } catch (XmlPullParserException | IOException e) {
+            } catch (IOException e) {
                 e.printStackTrace();
+                Sentry.capture(e);
             }
             return null;
         }
@@ -196,14 +212,16 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 .commit();
     }
 
-    private HashMap<String, CarPark> getCarParkXmlFromNetwork(String urlString) throws XmlPullParserException, IOException {
+    private HashMap<String, CarPark> getCarParkXmlFromNetwork(String urlString) throws IOException {
         InputStream stream = null;
         ParkingXMLParser parkingXMLParser = new ParkingXMLParser();
-        HashMap<String, CarPark> carParks;
+        HashMap<String, CarPark> carParks = null;
 
         try {
             stream = downloadUrl(urlString);
             carParks = parkingXMLParser.parse(stream);
+        } catch (XmlPullParserException | IOException e) {
+            Sentry.capture(e);
         } finally {
             if (stream != null) {
                 stream.close();
@@ -213,7 +231,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     private InputStream downloadUrl(String urlString) throws IOException {
-
+        Sentry.getContext().recordBreadcrumb(
+                new BreadcrumbBuilder().setMessage("Attempting to download URL").build()
+        );
         URL url = new URL(urlString);
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setReadTimeout(10000);
