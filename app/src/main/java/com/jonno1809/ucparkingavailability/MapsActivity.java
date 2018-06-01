@@ -5,6 +5,7 @@ import android.graphics.Color;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
@@ -152,54 +153,58 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         final int EMPTY_BLUE = 221;
         final int FULL_RGB = 180;
 
-        for (String carParkKey : carParks.keySet()) {
-            CarPark carPark = carParks.get(carParkKey);
-            String type = carPark.getType();
-            float free = carPark.getFree();
-            float capacity = carPark.getCapacity();
+        if (carParks != null) {
+            for (String carParkKey : carParks.keySet()) {
+                CarPark carPark = carParks.get(carParkKey);
+                String type = carPark.getType();
+                float free = carPark.getFree();
+                float capacity = carPark.getCapacity();
 
-            Polygon carParkShape = mMap.addPolygon(carPark.getCarParkEdges());
-            carParkShape.setClickable(true);
-            carParkShape.setTag(carPark.getName());
+                Polygon carParkShape = mMap.addPolygon(carPark.getCarParkEdges());
+                carParkShape.setClickable(true);
+                carParkShape.setTag(carPark.getName());
 
-            if (!type.contains("e-Permit") || capacity < 0) {
-                /* Purple */
-                carParkShape.setFillColor(Color.argb(153, 156, 117, 255));
-                carParkShape.setStrokeColor(Color.rgb(156, 117, 255));
-            } else if (free == 0) {
-                /* Red */
-                carParkShape.setFillColor(Color.argb(153, 211, 0, 0));
-                carParkShape.setStrokeColor(Color.rgb(221, 0, 0));
-            } else if (free < 15) {
-                /* Orange */
-                carParkShape.setFillColor(Color.argb(153, 255, 112, 56));
-                carParkShape.setStrokeColor(Color.rgb(255, 112, 56));
-            } else {
-                /* Blue or grey */
-                float percent = free / capacity;
-                int red = FULL_RGB - Math.round((FULL_RGB - EMPTY_RED) * percent);
-                int green = FULL_RGB - Math.round((FULL_RGB - EMPTY_GREEN) * percent);
-                int blue = FULL_RGB - Math.round((FULL_RGB - EMPTY_BLUE) * percent);
-                int fillColour = Color.argb(153, red, green, blue);
-                int strokeColour = Color.rgb(red, green, blue);
-                carParkShape.setFillColor(fillColour);
-                carParkShape.setStrokeColor(strokeColour);
+                if (!type.contains("e-Permit") || capacity < 0) {
+                    /* Purple */
+                    carParkShape.setFillColor(Color.argb(153, 156, 117, 255));
+                    carParkShape.setStrokeColor(Color.rgb(156, 117, 255));
+                } else if (free == 0) {
+                    /* Red */
+                    carParkShape.setFillColor(Color.argb(153, 211, 0, 0));
+                    carParkShape.setStrokeColor(Color.rgb(221, 0, 0));
+                } else if (free < 15) {
+                    /* Orange */
+                    carParkShape.setFillColor(Color.argb(153, 255, 112, 56));
+                    carParkShape.setStrokeColor(Color.rgb(255, 112, 56));
+                } else {
+                    /* Blue or grey */
+                    float percent = free / capacity;
+                    int red = FULL_RGB - Math.round((FULL_RGB - EMPTY_RED) * percent);
+                    int green = FULL_RGB - Math.round((FULL_RGB - EMPTY_GREEN) * percent);
+                    int blue = FULL_RGB - Math.round((FULL_RGB - EMPTY_BLUE) * percent);
+                    int fillColour = Color.argb(153, red, green, blue);
+                    int strokeColour = Color.rgb(red, green, blue);
+                    carParkShape.setFillColor(fillColour);
+                    carParkShape.setStrokeColor(strokeColour);
+                }
             }
+            GoogleMap.OnPolygonClickListener onPolygonClickListener = new GoogleMap.OnPolygonClickListener() {
+                @Override
+                public void onPolygonClick(Polygon polygon) {
+                    String tag = String.valueOf(polygon.getTag());
+                    CarPark carPark = carParks.get(tag);
+                    FragmentManager fragmentManager = getSupportFragmentManager();
+                    FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+                    Fragment carParkDetailsFragment = CarParkDetailsFragment.newInstance(carPark);
+                    fragmentTransaction.replace(R.id.fragmentContainer, carParkDetailsFragment, CARPARKDETAILS_FRAGMENT_TAG);
+                    fragmentTransaction.addToBackStack(null);
+                    fragmentTransaction.commit();
+                }
+            };
+            mMap.setOnPolygonClickListener(onPolygonClickListener);
+        } else {
+            Snackbar.make(findViewById(R.id.mapActivity), R.string.no_car_parks, Snackbar.LENGTH_INDEFINITE).show();
         }
-        GoogleMap.OnPolygonClickListener onPolygonClickListener = new GoogleMap.OnPolygonClickListener() {
-            @Override
-            public void onPolygonClick(Polygon polygon) {
-                String tag = String.valueOf(polygon.getTag());
-                CarPark carPark = carParks.get(tag);
-                FragmentManager fragmentManager = getSupportFragmentManager();
-                FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-                Fragment carParkDetailsFragment = CarParkDetailsFragment.newInstance(carPark);
-                fragmentTransaction.replace(R.id.fragmentContainer, carParkDetailsFragment, CARPARKDETAILS_FRAGMENT_TAG);
-                fragmentTransaction.addToBackStack(null);
-                fragmentTransaction.commit();
-            }
-        };
-        mMap.setOnPolygonClickListener(onPolygonClickListener);
     }
 
     private void createMap(SupportMapFragment mapFragment) {
