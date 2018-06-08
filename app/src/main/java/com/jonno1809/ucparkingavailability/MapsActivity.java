@@ -28,10 +28,12 @@ import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.ref.WeakReference;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.HashMap;
+import java.util.concurrent.ExecutionException;
 
 import io.sentry.Sentry;
 import io.sentry.android.AndroidSentryClientFactory;
@@ -72,7 +74,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             carParks = (HashMap<String, CarPark>) savedInstanceState.getSerializable(CARPARKS_TAG);
             fragmentManager.beginTransaction().replace(R.id.fragmentContainer, currentFragment)
                     .commit();
-            if (currentFragment.getTag().equals(MAP_FRAGMENT_TAG)) {
+            String tag = currentFragment != null ? currentFragment.getTag() : "";
+            if (tag != null && tag.equals(MAP_FRAGMENT_TAG)) {
                 createMap((SupportMapFragment) currentFragment);
             }
         } else {
@@ -91,18 +94,30 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
 
-        // Add a marker in Sydney and move the camera
+        // Add a marker at UC and move the camera
         LatLng ucLatLng = new LatLng(-35.237894, 149.084055);
         mMap.addMarker(new MarkerOptions().position(ucLatLng).title("University of Canberra"));
         mMap.getUiSettings().setZoomControlsEnabled(true);
-        if (carParks.isEmpty()) {
-            DownloadXmlTask downloadXmlTask = new DownloadXmlTask();
-            String UC_URL = "https://www.canberra.edu.au/wsprd/UCMobile/parking.svc/availability";
-            downloadXmlTask.execute(UC_URL);
-        } else {
-            addCarParkShapesToMap(carParks);
-        }
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(ucLatLng, 15));
+
+        // Download carpark XML file if haven't already
+        if (carParks.isEmpty()) {
+            DownloadXmlTask downloadXmlTask = new DownloadXmlTask(this);
+            String UC_URL = "https://www.canberra.edu.au/wsprd/UCMobile/parking.svc/availability";
+            try {
+                // Made this synchronous to (more easily) make DownloadXmlTask static so that there are no
+                // memory leaks. addCarParkShapes was being done right at the end anyway in the onPostExecute
+                // method anyway so it should have no performance downgrades, just the same.
+                carParks = downloadXmlTask.execute(UC_URL).get();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+                Sentry.capture(e);
+            } catch (ExecutionException e) {
+                e.printStackTrace();
+                Sentry.capture(e);
+            }
+        }
+        addCarParkShapesToMap(carParks);
     }
 
     @Override
@@ -128,7 +143,13 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         fragmentManager.addOnBackStackChangedListener(listener);
     }
 
-    private class DownloadXmlTask extends AsyncTask<String, Void, HashMap<String, CarPark>> {
+    private static class DownloadXmlTask extends AsyncTask<String, Void, HashMap<String, CarPark>> {
+
+        private WeakReference<Context> weakReferenceContext;
+
+        DownloadXmlTask(MapsActivity context) {
+            weakReferenceContext = new WeakReference<Context>(context);
+        }
 
         @Override
         protected HashMap<String, CarPark> doInBackground(String... urls) {
@@ -136,19 +157,65 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     new BreadcrumbBuilder().setMessage("Attempt to run DownloadXmlTask").build());
             try {
                 return getCarParkXmlFromNetwork(urls[0]);
-            }
-            catch (IOException e) {
+            } catch (IOException e) {
                 e.printStackTrace();
                 Sentry.capture(e);
             }
             return null;
         }
 
-        @Override
-        protected void onPostExecute(HashMap<String, CarPark> result) {
-            carParks = result;
-            addCarParkShapesToMap(carParks);
+
+        private HashMap<String, CarPark> getCarParkXmlFromNetwork(String urlString) throws IOException {
+            InputStream stream = null;
+            ParkingXMLParser parkingXMLParser = new ParkingXMLParser();
+            HashMap<String, CarPark> carParks = null;
+
+            try {
+                stream = downloadUrl(urlString);
+                carParks = parkingXMLParser.parse(stream);
+            } catch (XmlPullParserException | IOException e) {
+                Sentry.capture(e);
+            } finally {
+                if (stream != null) {
+                    stream.close();
+                }
+            }
+            return carParks;
         }
+
+        private InputStream downloadUrl(String urlString) throws IOException {
+            Sentry.getContext().recordBreadcrumb(
+                    new BreadcrumbBuilder().setMessage("Attempting to download URL").build()
+            );
+            try {
+                URL url = new URL(urlString);
+                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                connection.setReadTimeout(10000);
+                connection.setConnectTimeout(15000);
+                connection.setRequestMethod("GET");
+                connection.setDoInput(true);
+                connection.connect();
+                return connection.getInputStream();
+            } catch (UnknownHostException e) {
+                Log.e("UnknownHostException", e.getMessage());
+                Context context = weakReferenceContext.get();
+                /* Only let Sentry capture UnknownHostException if there is an active internet connection,
+                 * UnknownHostException isn't a bug if the user wasn't connected to the internet. */
+                ConnectivityManager connectivityManager =
+                        (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+                NetworkInfo activeNetwork = null;
+                if (connectivityManager != null) {
+                    activeNetwork = connectivityManager.getActiveNetworkInfo();
+                }
+                boolean isConnected = activeNetwork != null && activeNetwork.isConnected();
+                if (isConnected) {
+                    Sentry.capture(e);
+                }
+                return null;
+            }
+
+        }
+
     }
 
     private void addCarParkShapesToMap(final HashMap<String, CarPark> carParks) {
@@ -220,57 +287,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.fragmentContainer, mapFragment, MAP_FRAGMENT_TAG)
                 .commit();
-    }
-
-    private HashMap<String, CarPark> getCarParkXmlFromNetwork(String urlString) throws IOException {
-        InputStream stream = null;
-        ParkingXMLParser parkingXMLParser = new ParkingXMLParser();
-        HashMap<String, CarPark> carParks = null;
-
-        try {
-            stream = downloadUrl(urlString);
-            carParks = parkingXMLParser.parse(stream);
-        } catch (XmlPullParserException | IOException e) {
-            Sentry.capture(e);
-        } finally {
-            if (stream != null) {
-                stream.close();
-            }
-        }
-        return carParks;
-    }
-
-    private InputStream downloadUrl(String urlString) throws IOException {
-        Sentry.getContext().recordBreadcrumb(
-                new BreadcrumbBuilder().setMessage("Attempting to download URL").build()
-        );
-        try {
-            URL url = new URL(urlString);
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            connection.setReadTimeout(10000);
-            connection.setConnectTimeout(15000);
-            connection.setRequestMethod("GET");
-            connection.setDoInput(true);
-            connection.connect();
-            return connection.getInputStream();
-        } catch (UnknownHostException e) {
-            Log.e("UnknownHostException", e.getMessage());
-
-            /* Only let Sentry capture UnknownHostException if there is an active internet connection,
-            * UnknownHostException isn't a bug if the user wasn't connected to the internet. */
-            ConnectivityManager connectivityManager =
-                    (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-            NetworkInfo activeNetwork = null;
-            if (connectivityManager != null) {
-                activeNetwork = connectivityManager.getActiveNetworkInfo();
-            }
-            boolean isConnected = activeNetwork != null && activeNetwork.isConnected();
-            if (isConnected) {
-                Sentry.capture(e);
-            }
-            return null;
-        }
-
     }
 
     @Override
