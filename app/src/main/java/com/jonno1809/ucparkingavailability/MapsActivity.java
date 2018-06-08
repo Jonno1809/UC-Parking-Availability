@@ -2,6 +2,8 @@ package com.jonno1809.ucparkingavailability;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -11,6 +13,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.MenuItem;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -27,6 +30,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.UnknownHostException;
 import java.util.HashMap;
 
 import io.sentry.Sentry;
@@ -132,7 +136,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     new BreadcrumbBuilder().setMessage("Attempt to run DownloadXmlTask").build());
             try {
                 return getCarParkXmlFromNetwork(urls[0]);
-            } catch (IOException e) {
+            }
+            catch (IOException e) {
                 e.printStackTrace();
                 Sentry.capture(e);
             }
@@ -239,14 +244,32 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         Sentry.getContext().recordBreadcrumb(
                 new BreadcrumbBuilder().setMessage("Attempting to download URL").build()
         );
-        URL url = new URL(urlString);
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        connection.setReadTimeout(10000);
-        connection.setConnectTimeout(15000);
-        connection.setRequestMethod("GET");
-        connection.setDoInput(true);
-        connection.connect();
-        return connection.getInputStream();
+        try {
+            URL url = new URL(urlString);
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setReadTimeout(10000);
+            connection.setConnectTimeout(15000);
+            connection.setRequestMethod("GET");
+            connection.setDoInput(true);
+            connection.connect();
+            return connection.getInputStream();
+        } catch (UnknownHostException e) {
+            Log.e("UnknownHostException", e.getMessage());
+
+            /* Only let Sentry capture UnknownHostException if there is an active internet connection,
+            * UnknownHostException isn't a bug if the user wasn't connected to the internet. */
+            ConnectivityManager connectivityManager =
+                    (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+            NetworkInfo activeNetwork = null;
+            if (connectivityManager != null) {
+                activeNetwork = connectivityManager.getActiveNetworkInfo();
+            }
+            boolean isConnected = activeNetwork != null && activeNetwork.isConnected();
+            if (isConnected) {
+                Sentry.capture(e);
+            }
+            return null;
+        }
 
     }
 
