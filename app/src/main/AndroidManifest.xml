@@ -39,11 +39,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <!--<activity-->
-            <!--android:name=".CarParkDetailsActivity"-->
-            <!--android:label="@string/title_activity_car_park_details"-->
-            <!--android:theme="@style/AppTheme.NoActionBar"-->
-            <!--android:parentActivityName=".MapsActivity" />-->
     </application>
 
 </manifest>
