@@ -19,6 +19,7 @@ import java.util.List;
 public class MapsActivity_Robolectric_Tests {
 
     private MapsActivity mapsActivity;
+    private CarPark carPark;
 
     @Before
     public void setup() throws Exception {
