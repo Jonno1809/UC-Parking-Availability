@@ -4,6 +4,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.PolygonOptions;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
@@ -19,22 +20,8 @@ import java.util.List;
 public class ParkingXMLParser_Robolectric_Tests {
     private HashMap<String, CarPark> carParks = new HashMap<>();
 
-    @Test
-    public void testParse(){
-        setUpCarParks();
-        ParkingXMLParser parkingXMLParser = new ParkingXMLParser();
-        try {
-            InputStream inputStream = getClass().getClassLoader().getResourceAsStream("CarParksXML_Test.xml");
-            HashMap<String, CarPark> result = parkingXMLParser.parse(inputStream);
-            Assert.assertEquals(result, carParks);
-            carParks.remove("K1");
-            Assert.assertNotEquals(result, carParks);
-        } catch (XmlPullParserException | IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void setUpCarParks() {
+    @Before
+    public void setUpCarParks() {
         List<LatLng> coords = new LinkedList<>();
         coords.add(new LatLng(-35.240344,149.086734));
         coords.add(new LatLng(-35.240344,149.086573));
@@ -343,5 +330,19 @@ public class ParkingXMLParser_Robolectric_Tests {
         coords.add(new LatLng(-35.240386,149.083984));
         coords.add(new LatLng(-35.240198,149.083986));
         this.carParks.put("W1", new CarPark("W1",13,0,0,"Childcare pickup/dropoff",new LatLng(-35.240309,149.083892), new PolygonOptions().addAll(coords)));
+    }
+
+    @Test
+    public void testParse(){
+        ParkingXMLParser parkingXMLParser = new ParkingXMLParser();
+        try {
+            InputStream inputStream = getClass().getClassLoader().getResourceAsStream("CarParksXML_Test.xml");
+            HashMap<String, CarPark> result = parkingXMLParser.parse(inputStream);
+            Assert.assertEquals(result, carParks);
+            carParks.remove("K1");
+            Assert.assertNotEquals(result, carParks);
+        } catch (XmlPullParserException | IOException e) {
+            e.printStackTrace();
+        }
     }
 }
