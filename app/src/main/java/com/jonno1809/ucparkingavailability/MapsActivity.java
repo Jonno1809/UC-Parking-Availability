@@ -44,6 +44,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         CarParkDetailsFragment
                 .OnCarParkShapeSelectedListener {
 
+    public GoogleMap getMap() {
+        return mMap;
+    }
+
     private GoogleMap mMap;
     private final String CARPARKDETAILS_FRAGMENT_TAG = "carParkDetailsFragment";
     private final String MAP_FRAGMENT_TAG = "mapFragment";
