@@ -23,8 +23,8 @@ public class CarPark implements Parcelable {
     private final LatLng coords;
     private final PolygonOptions carParkEdges;
 
-    CarPark(String name, int capacity, int free, int occupied,
-            String type, LatLng coords, PolygonOptions carParkEdges) {
+    CarPark(final String name, final int capacity, final int free, final int occupied,
+            final String type, final LatLng coords, final PolygonOptions carParkEdges) {
         this.name = name;
         this.capacity = capacity;
         this.free = free;
@@ -34,7 +34,7 @@ public class CarPark implements Parcelable {
         this.carParkEdges = carParkEdges;
     }
 
-    private CarPark(Parcel in) {
+    private CarPark(final Parcel in) {
         this.name = in.readString();
         this.capacity = in.readInt();
         this.free = in.readInt();
@@ -91,7 +91,7 @@ public class CarPark implements Parcelable {
     };
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(final Object obj) {
         if (this == obj) {
             return true;
         }
