@@ -111,10 +111,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 // memory leaks. addCarParkShapes was being done right at the end anyway in the onPostExecute
                 // method anyway so it should have no performance downgrades, just the same.
                 carParks = downloadXmlTask.execute(UC_URL).get();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-                Sentry.capture(e);
-            } catch (ExecutionException e) {
+            } catch (InterruptedException | ExecutionException e) {
                 e.printStackTrace();
                 Sentry.capture(e);
             }
