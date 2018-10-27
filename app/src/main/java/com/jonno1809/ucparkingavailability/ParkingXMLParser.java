@@ -55,7 +55,7 @@ public class ParkingXMLParser {
     }
 
 
-    HashMap<String, CarPark> parse(InputStream inputStream) throws XmlPullParserException, IOException {
+    Map<String, CarPark> parse(final InputStream inputStream) throws XmlPullParserException, IOException {
         try {
             if (inputStream != null) {
                 XmlPullParser parser = Xml.newPullParser();
@@ -72,10 +72,10 @@ public class ParkingXMLParser {
         return null;
     }
 
-    private HashMap<String, CarPark> readCarParks(XmlPullParser parser) throws
+    private Map<String, CarPark> readCarParks(final XmlPullParser parser) throws
             XmlPullParserException, IOException {
 
-        HashMap<String, CarPark> carParks = new HashMap<>();
+        Map<String, CarPark> carParks = new HashMap<>();
 
         parser.require(XmlPullParser.START_TAG, namespace, "parking_availability");
         while (parser.next() != XmlPullParser.END_TAG) {
@@ -100,7 +100,7 @@ public class ParkingXMLParser {
     }
 
 
-    private CarPark readCarPark (XmlPullParser parser) throws XmlPullParserException, IOException {
+    private CarPark readCarPark(final XmlPullParser parser) throws XmlPullParserException, IOException {
         parser.require(XmlPullParser.START_TAG, namespace, "car_park");
         String name = null;
         int capacity = 0;
@@ -130,14 +130,14 @@ public class ParkingXMLParser {
         return new CarPark(name, capacity, free, occupied, type, coords, carParkEdges);
     }
 
-    private String readName (XmlPullParser parser) throws IOException, XmlPullParserException {
+    private String readName(final XmlPullParser parser) throws IOException, XmlPullParserException {
         parser.require(XmlPullParser.START_TAG, namespace, "name");
         String name = readText(parser);
         parser.require(XmlPullParser.END_TAG, namespace, "name");
         return name;
     }
 
-    private int readCapacity (XmlPullParser parser) throws IOException, XmlPullParserException {
+    private int readCapacity(final XmlPullParser parser) throws IOException, XmlPullParserException {
         parser.require(XmlPullParser.START_TAG, namespace, "capacity");
         int capacity = Integer.parseInt(readText(parser));
         parser.require(XmlPullParser.END_TAG, namespace, "capacity");
@@ -151,7 +151,7 @@ public class ParkingXMLParser {
         return free;
     }
 
-    private int readOccupancy (XmlPullParser parser) throws IOException, XmlPullParserException {
+    private int readOccupancy(final XmlPullParser parser) throws IOException, XmlPullParserException {
         parser.require(XmlPullParser.START_TAG, namespace, "occupancy");
         int occupied = Integer.parseInt(readText(parser));
         parser.require(XmlPullParser.END_TAG, namespace, "occupancy");
@@ -159,7 +159,7 @@ public class ParkingXMLParser {
     }
 
     // Note: UC stores coordinates as {lng:y, lat:x} for some reason
-    private PolygonOptions readShapeCoords(XmlPullParser parser) throws IOException, XmlPullParserException {
+    private PolygonOptions readShapeCoords(final XmlPullParser parser) throws IOException, XmlPullParserException {
         parser.require(XmlPullParser.START_TAG, namespace, "shape_coords");
         String temp = readText(parser);
         parser.require(XmlPullParser.END_TAG, namespace, "shape_coords");
@@ -185,14 +185,14 @@ public class ParkingXMLParser {
         return carParkEdges;
     }
 
-    private String readType(XmlPullParser parser) throws IOException, XmlPullParserException {
+    private String readType(final XmlPullParser parser) throws IOException, XmlPullParserException {
         parser.require(XmlPullParser.START_TAG, namespace, "type");
         String type = readText(parser);
         parser.require(XmlPullParser.END_TAG, namespace, "type");
         return type;
     }
 
-    private String readText (XmlPullParser parser) throws XmlPullParserException, IOException {
+    private String readText(final XmlPullParser parser) throws XmlPullParserException, IOException {
         String result = "";
         if (parser.next() == XmlPullParser.TEXT) {
             result = parser.getText();
@@ -201,7 +201,7 @@ public class ParkingXMLParser {
         return result;
     }
 
-    private void skip(XmlPullParser parser) throws XmlPullParserException, IOException {
+    private void skip(final XmlPullParser parser) throws XmlPullParserException, IOException {
         if (parser.getEventType() != XmlPullParser.START_TAG) {
             throw new IllegalStateException();
         }

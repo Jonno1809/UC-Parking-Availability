@@ -14,6 +14,7 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 @RunWith(RobolectricTestRunner.class)
 public class ParkingXMLParser_Robolectric_Tests {
@@ -25,7 +26,7 @@ public class ParkingXMLParser_Robolectric_Tests {
         ParkingXMLParser parkingXMLParser = new ParkingXMLParser();
         try {
             InputStream inputStream = getClass().getClassLoader().getResourceAsStream("CarParksXML_Test.xml");
-            HashMap<String, CarPark> result = parkingXMLParser.parse(inputStream);
+            Map<String, CarPark> result = parkingXMLParser.parse(inputStream);
             Assert.assertEquals(result, carParks);
             carParks.remove("K1");
             Assert.assertNotEquals(result, carParks);

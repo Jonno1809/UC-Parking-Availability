@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
@@ -11,6 +12,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+
+import java.util.Objects;
 
 
 /**
@@ -50,7 +53,7 @@ public class CarParkDetailsFragment extends Fragment {
      * @return A new instance of fragment CarParkDetailsFragment.
      */
 
-    public static CarParkDetailsFragment newInstance(CarPark carPark) {
+    public static CarParkDetailsFragment newInstance(final CarPark carPark) {
         CarParkDetailsFragment fragment = new CarParkDetailsFragment();
         Bundle args = new Bundle();
         args.putParcelable(CARPARK_KEY, carPark);
@@ -59,7 +62,7 @@ public class CarParkDetailsFragment extends Fragment {
     }
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
+    public void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (savedInstanceState != null) {
             cpName = savedInstanceState.getString(NAME_KEY);
@@ -87,7 +90,7 @@ public class CarParkDetailsFragment extends Fragment {
             }
         }
 
-        ActionBar actionBar = ((AppCompatActivity)getActivity()).getSupportActionBar();
+        ActionBar actionBar = ((AppCompatActivity)Objects.requireNonNull(getActivity())).getSupportActionBar();
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
             actionBar.setDisplayShowHomeEnabled(true);
@@ -95,8 +98,8 @@ public class CarParkDetailsFragment extends Fragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(@NonNull final LayoutInflater inflater, final ViewGroup container,
+                             final Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_car_park_details, container, false);
         TextView tvName = view.findViewById(R.id.tvName);
@@ -116,14 +119,14 @@ public class CarParkDetailsFragment extends Fragment {
     }
 
     // TODO: Rename method, update argument and hook method into UI event
-    public void onButtonPressed(Uri uri) {
+    public void onButtonPressed(final Uri uri) {
         if (mListener != null) {
             mListener.onCarParkShapeSelected(uri);
         }
     }
 
     @Override
-    public void onAttach(Context context) {
+    public void onAttach(final Context context) {
         super.onAttach(context);
         if (context instanceof OnCarParkShapeSelectedListener) {
             mListener = (OnCarParkShapeSelectedListener) context;
@@ -155,7 +158,7 @@ public class CarParkDetailsFragment extends Fragment {
     }
 
     @Override
-    public void onSaveInstanceState(Bundle outState) {
+    public void onSaveInstanceState(final Bundle outState) {
         outState.putString(NAME_KEY, cpName);
         outState.putInt(FREE_KEY, cpFree);
         outState.putInt(OCCUPIED_KEY, cpOccupied);
