@@ -28,11 +28,13 @@ import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.lang.ref.WeakReference;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 import io.sentry.Sentry;
@@ -54,10 +56,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private final String CURRENT_FRAGMENT_TAG = "currentFragment";
     private final String CARPARKS_TAG = "carParks";
 
-    private HashMap<String, CarPark> carParks = new HashMap<>();
+    private Map<String, CarPark> carParks = new HashMap<>();
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         Context context = this.getApplicationContext();
@@ -75,7 +77,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     new BreadcrumbBuilder().setMessage("Creating activity with savedInstanceState").build()
             );
             Fragment currentFragment = fragmentManager.getFragment(savedInstanceState, CURRENT_FRAGMENT_TAG);
-            carParks = (HashMap<String, CarPark>) savedInstanceState.getSerializable(CARPARKS_TAG);
+            carParks = (Map<String, CarPark>) savedInstanceState.getSerializable(CARPARKS_TAG);
             fragmentManager.beginTransaction().replace(R.id.fragmentContainer, currentFragment)
                     .commit();
             String tag = currentFragment != null ? currentFragment.getTag() : "";
@@ -95,7 +97,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     @Override
-    public void onMapReady(GoogleMap googleMap) {
+    public void onMapReady(final GoogleMap googleMap) {
         mMap = googleMap;
 
         // Add a marker at UC and move the camera
@@ -113,10 +115,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 // memory leaks. addCarParkShapes was being done right at the end anyway in the onPostExecute
                 // method anyway so it should have no performance downgrades, just the same.
                 carParks = downloadXmlTask.execute(UC_URL).get();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-                Sentry.capture(e);
-            } catch (ExecutionException e) {
+            } catch (InterruptedException | ExecutionException e) {
                 e.printStackTrace();
                 Sentry.capture(e);
             }
@@ -147,7 +146,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         fragmentManager.addOnBackStackChangedListener(listener);
     }
 
-    private static class DownloadXmlTask extends AsyncTask<String, Void, HashMap<String, CarPark>> {
+    private static class DownloadXmlTask extends AsyncTask<String, Void, Map<String, CarPark>> {
 
         private WeakReference<Context> weakReferenceContext;
 
@@ -156,7 +155,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
 
         @Override
-        protected HashMap<String, CarPark> doInBackground(String... urls) {
+        protected Map<String, CarPark> doInBackground(final String... urls) {
             Sentry.getContext().recordBreadcrumb(
                     new BreadcrumbBuilder().setMessage("Attempt to run DownloadXmlTask").build());
             try {
@@ -169,25 +168,19 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
 
 
-        private HashMap<String, CarPark> getCarParkXmlFromNetwork(String urlString) throws IOException {
-            InputStream stream = null;
+        private Map<String, CarPark> getCarParkXmlFromNetwork(final String urlString) throws IOException {
             ParkingXMLParser parkingXMLParser = new ParkingXMLParser();
-            HashMap<String, CarPark> carParks = null;
+            Map<String, CarPark> carParks = null;
 
-            try {
-                stream = downloadUrl(urlString);
+            try (InputStream stream = downloadUrl(urlString)) {
                 carParks = parkingXMLParser.parse(stream);
             } catch (XmlPullParserException | IOException e) {
                 Sentry.capture(e);
-            } finally {
-                if (stream != null) {
-                    stream.close();
-                }
             }
             return carParks;
         }
 
-        private InputStream downloadUrl(String urlString) throws IOException {
+        private InputStream downloadUrl(final String urlString) throws IOException {
             Sentry.getContext().recordBreadcrumb(
                     new BreadcrumbBuilder().setMessage("Attempting to download URL").build()
             );
@@ -222,7 +215,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     }
 
-    private void addCarParkShapesToMap(final HashMap<String, CarPark> carParks) {
+    private void addCarParkShapesToMap(final Map<String, CarPark> carParks) {
         // For calculating colour percentages
         final int EMPTY_RED = 0;
         final int EMPTY_GREEN = 158;
@@ -294,7 +287,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     @Override
-    public boolean              onOptionsItemSelected(MenuItem item) {
+    public boolean onOptionsItemSelected(final MenuItem item) {
         switch (item.getItemId()) {
             // Respond to the action bar's Up/Home button
             case android.R.id.home:
@@ -314,7 +307,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
     }
 
-    private void displayActionBarUpArrow(boolean isDisplayed) {
+    private void displayActionBarUpArrow(final boolean isDisplayed) {
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(isDisplayed);
@@ -323,7 +316,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     @Override
-    public void onSaveInstanceState(Bundle outState) {
+    public void onSaveInstanceState(final Bundle outState) {
         FragmentManager fragmentManager = getSupportFragmentManager();
         String tag;
         if (fragmentManager.getBackStackEntryCount() == 0) {
@@ -333,7 +326,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
         Fragment fragment = fragmentManager.findFragmentByTag(tag);
         fragmentManager.putFragment(outState, CURRENT_FRAGMENT_TAG, fragment);
-        outState.putSerializable(CARPARKS_TAG, carParks);
+        outState.putSerializable(CARPARKS_TAG, (Serializable) carParks);
         super.onSaveInstanceState(outState);
     }
 }
