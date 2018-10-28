@@ -1,5 +1,8 @@
 package com.jonno1809.ucparkingavailability;
 
+import android.content.Context;
+import android.content.Intent;
+import android.view.Menu;
 import android.view.MenuItem;
 
 import com.google.android.gms.maps.GoogleMap;
@@ -12,6 +15,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.Shadows;
 import org.robolectric.annotation.Config;
 import org.robolectric.fakes.RoboMenuItem;
 
@@ -23,6 +27,7 @@ import java.util.List;
 public class MapsActivity_Robolectric_Tests {
 
     private MapsActivity mapsActivity;
+    Context context;
     private CarPark carPark;
 
     @Before
@@ -32,7 +37,11 @@ public class MapsActivity_Robolectric_Tests {
         coords.add(new LatLng(-35.240344, 149.086573));
         carPark = new CarPark("K1", 27, 0, 0, "Childcare pickup/dropoff", new LatLng
                 (-35.240708, 149.086687), new PolygonOptions().addAll(coords));
+        Intent intent = new Intent();
+        mapsActivity = Robolectric.buildActivity(MapsActivity.class).create().resume()
+                .get();
         mapsActivity = Robolectric.setupActivity(MapsActivity.class);
+        context = mapsActivity.getApplicationContext();
     }
 
     @Test
@@ -47,10 +56,13 @@ public class MapsActivity_Robolectric_Tests {
 
     @Test
     public void testMenuItemsContainCorrectStrings() {
-        MenuItem satelliteMenuItem = new RoboMenuItem(R.id.satelliteMapMenuItem);
+        Menu menu = Shadows.shadowOf(mapsActivity).getOptionsMenu()
+        Assert.assertNotNull(menu);
+        MenuItem satelliteMenuItem = menu.findItem(R.id.satelliteMapMenuItem);
         MenuItem plainMenuItem = new RoboMenuItem(R.id.normalMapMenuItem);
         MenuItem terrainMenuItem = new RoboMenuItem(R.id.terrainMapMenuItem);
         MenuItem hybridMenuItem = new RoboMenuItem(R.id.hybridMapMenuItem);
+//        mapsActivity.onCreateOptionsMenu(menu);
         Assert.assertEquals("Satellite view", satelliteMenuItem.getTitle());
         Assert.assertEquals("Normal view", plainMenuItem.getTitle());
         Assert.assertEquals("Terrain view", terrainMenuItem.getTitle());

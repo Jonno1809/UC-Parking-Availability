@@ -14,6 +14,8 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -94,6 +96,14 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         if (actionBar != null) {
             actionBar.show();
         }
+    }
+
+    @Override
+
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.map_types, menu);
+        return true;
     }
 
     @Override
