@@ -56,7 +56,7 @@ public class MapsActivity_Robolectric_Tests {
 
     @Test
     public void testMenuItemsContainCorrectStrings() {
-        Menu menu = Shadows.shadowOf(mapsActivity).getOptionsMenu()
+        Menu menu = Shadows.shadowOf(mapsActivity).getOptionsMenu();
         Assert.assertNotNull(menu);
         MenuItem satelliteMenuItem = menu.findItem(R.id.satelliteMapMenuItem);
         MenuItem plainMenuItem = new RoboMenuItem(R.id.normalMapMenuItem);
