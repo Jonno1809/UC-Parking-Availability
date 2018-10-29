@@ -14,6 +14,8 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -46,11 +48,16 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         CarParkDetailsFragment
                 .OnCarParkShapeSelectedListener {
 
+    public GoogleMap getMap() {
+        return mMap;
+    }
+
     private GoogleMap mMap;
     private final String CARPARKDETAILS_FRAGMENT_TAG = "carParkDetailsFragment";
     private final String MAP_FRAGMENT_TAG = "mapFragment";
     private final String CURRENT_FRAGMENT_TAG = "currentFragment";
     private final String CARPARKS_TAG = "carParks";
+    private int mapType = GoogleMap.MAP_TYPE_NORMAL;
 
     private Map<String, CarPark> carParks = new HashMap<>();
 
@@ -93,6 +100,14 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     @Override
+
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.map_types, menu);
+        return true;
+    }
+
+    @Override
     public void onMapReady(final GoogleMap googleMap) {
         mMap = googleMap;
 
@@ -101,6 +116,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         mMap.addMarker(new MarkerOptions().position(ucLatLng).title("University of Canberra"));
         mMap.getUiSettings().setZoomControlsEnabled(true);
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(ucLatLng, 15));
+        mMap.setMapType(mapType);
 
         // Download carpark XML file if haven't already
         if (carParks.isEmpty()) {
@@ -288,6 +304,22 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             // Respond to the action bar's Up/Home button
             case android.R.id.home:
                 onBackPressed();
+                return true;
+            case R.id.normalMapMenuItem:
+                mapType = GoogleMap.MAP_TYPE_NORMAL;
+                mMap.setMapType(mapType);
+                return true;
+            case R.id.satelliteMapMenuItem:
+                mapType = GoogleMap.MAP_TYPE_SATELLITE;
+                mMap.setMapType(mapType);
+                return true;
+            case R.id.hybridMapMenuItem:
+                mapType = GoogleMap.MAP_TYPE_HYBRID;
+                mMap.setMapType(mapType);
+                return true;
+            case R.id.terrainMapMenuItem:
+                mapType = GoogleMap.MAP_TYPE_TERRAIN;
+                mMap.setMapType(mapType);
                 return true;
         }
         return super.onOptionsItemSelected(item);

@@ -8,4 +8,8 @@
     <string name="car_park_type">Type: %s</string>
     <string name="car_park_capactity">Capacity: %d</string>
     <string name="no_car_parks">No car parks found!</string>
+    <string name="normal_map_menu_item">Normal view</string>
+    <string name="satellite_map_menu_item">Satellite view</string>
+    <string name="terrain_map_menu_item">Terrain view</string>
+    <string name="hybrid_map_menu_item">Hybrid view</string>
 </resources>
