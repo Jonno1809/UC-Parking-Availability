@@ -228,61 +228,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     private void addCarParkShapesToMap(final Map<String, CarPark> carParks) {
-        // For calculating colour percentages
-        final int EMPTY_RED = 0;
-        final int EMPTY_GREEN = 158;
-        final int EMPTY_BLUE = 221;
-        final int FULL_RGB = 180;
-
         if (carParks != null) {
-            for (String carParkKey : carParks.keySet()) {
-                CarPark carPark = carParks.get(carParkKey);
-                String type = carPark.getType();
-                float free = carPark.getFree();
-                float capacity = carPark.getCapacity();
-
-                Polygon carParkShape = mMap.addPolygon(carPark.getCarParkEdges());
-                carParkShape.setClickable(true);
-                carParkShape.setTag(carPark.getName());
-
-                if (!type.contains("e-Permit") || capacity < 0) {
-                    /* Purple */
-                    carParkShape.setFillColor(Color.argb(153, 156, 117, 255));
-                    carParkShape.setStrokeColor(Color.rgb(156, 117, 255));
-                } else if (free == 0) {
-                    /* Red */
-                    carParkShape.setFillColor(Color.argb(153, 211, 0, 0));
-                    carParkShape.setStrokeColor(Color.rgb(221, 0, 0));
-                } else if (free < 15) {
-                    /* Orange */
-                    carParkShape.setFillColor(Color.argb(153, 255, 112, 56));
-                    carParkShape.setStrokeColor(Color.rgb(255, 112, 56));
-                } else {
-                    /* Blue or grey */
-                    float percent = free / capacity;
-                    int red = FULL_RGB - Math.round((FULL_RGB - EMPTY_RED) * percent);
-                    int green = FULL_RGB - Math.round((FULL_RGB - EMPTY_GREEN) * percent);
-                    int blue = FULL_RGB - Math.round((FULL_RGB - EMPTY_BLUE) * percent);
-                    int fillColour = Color.argb(153, red, green, blue);
-                    int strokeColour = Color.rgb(red, green, blue);
-                    carParkShape.setFillColor(fillColour);
-                    carParkShape.setStrokeColor(strokeColour);
-                }
-            }
-            GoogleMap.OnPolygonClickListener onPolygonClickListener = new GoogleMap.OnPolygonClickListener() {
-                @Override
-                public void onPolygonClick(Polygon polygon) {
-                    String tag = String.valueOf(polygon.getTag());
-                    CarPark carPark = carParks.get(tag);
-                    FragmentManager fragmentManager = getSupportFragmentManager();
-                    FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-                    Fragment carParkDetailsFragment = CarParkDetailsFragment.newInstance(carPark);
-                    fragmentTransaction.replace(R.id.fragmentContainer, carParkDetailsFragment, CARPARKDETAILS_FRAGMENT_TAG);
-                    fragmentTransaction.addToBackStack(null);
-                    fragmentTransaction.commit();
-                }
-            };
-            mMap.setOnPolygonClickListener(onPolygonClickListener);
+            colourInCarParks();
+            addCarparkShapeEventListeners();
         } else {
             Snackbar.make(findViewById(R.id.mapActivity), R.string.no_car_parks, Snackbar.LENGTH_INDEFINITE).show();
         }
@@ -356,5 +304,72 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         fragmentManager.putFragment(outState, CURRENT_FRAGMENT_TAG, fragment);
         outState.putSerializable(CARPARKS_TAG, (Serializable) carParks);
         super.onSaveInstanceState(outState);
+    }
+
+    private void colourInCarParks() {
+        // For calculating colour percentages
+        final int EMPTY_RED = 0;
+        final int EMPTY_GREEN = 158;
+        final int EMPTY_BLUE = 221;
+        final int FULL_RGB = 180;
+
+        final int PURPLE_FILL = Color.argb(153, 156, 117, 255);
+        final int RED_FILL = Color.argb(153, 211, 0, 0);
+        final int ORANGE_FILL = Color.argb(153, 255, 112, 56);
+        final int PURPLE_STROKE = Color.rgb(156, 117, 255);
+        final int RED_STROKE = Color.rgb(221, 0, 0);
+        final int ORANGE_STROKE = Color.rgb(255, 112, 56);
+
+        for (String carParkKey : carParks.keySet()) {
+            CarPark carPark = carParks.get(carParkKey);
+            String type = carPark.getType();
+            float free = carPark.getFree();
+            float capacity = carPark.getCapacity();
+
+            Polygon carParkShape = mMap.addPolygon(carPark.getCarParkEdges());
+            carParkShape.setClickable(true);
+            carParkShape.setTag(carPark.getName());
+
+            if (!type.contains("e-Permit") || capacity < 0) {
+                /* Purple */
+                carParkShape.setFillColor(PURPLE_FILL);
+                carParkShape.setStrokeColor(PURPLE_STROKE);
+            } else if (free == 0) {
+                /* Red */
+                carParkShape.setFillColor(RED_FILL);
+                carParkShape.setStrokeColor(RED_STROKE);
+            } else if (free < 15) {
+                /* Orange */
+                carParkShape.setFillColor(ORANGE_FILL);
+                carParkShape.setStrokeColor(ORANGE_STROKE);
+            } else {
+                /* Blue or grey */
+                float percent = free / capacity;
+                int red = FULL_RGB - Math.round((FULL_RGB - EMPTY_RED) * percent);
+                int green = FULL_RGB - Math.round((FULL_RGB - EMPTY_GREEN) * percent);
+                int blue = FULL_RGB - Math.round((FULL_RGB - EMPTY_BLUE) * percent);
+                int fillColour = Color.argb(153, red, green, blue);
+                int strokeColour = Color.rgb(red, green, blue);
+                carParkShape.setFillColor(fillColour);
+                carParkShape.setStrokeColor(strokeColour);
+            }
+        }
+    }
+
+    private void addCarparkShapeEventListeners() {
+        GoogleMap.OnPolygonClickListener onPolygonClickListener = new GoogleMap.OnPolygonClickListener() {
+            @Override
+            public void onPolygonClick(Polygon polygon) {
+                String tag = String.valueOf(polygon.getTag());
+                CarPark carPark = carParks.get(tag);
+                FragmentManager fragmentManager = getSupportFragmentManager();
+                FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+                Fragment carParkDetailsFragment = CarParkDetailsFragment.newInstance(carPark);
+                fragmentTransaction.replace(R.id.fragmentContainer, carParkDetailsFragment, CARPARKDETAILS_FRAGMENT_TAG);
+                fragmentTransaction.addToBackStack(null);
+                fragmentTransaction.commit();
+            }
+        };
+        mMap.setOnPolygonClickListener(onPolygonClickListener);
     }
 }
